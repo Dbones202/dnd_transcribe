@@ -8,6 +8,7 @@ import whisperx.diarize
 import torch
 import time
 import datetime
+import subprocess
 from tqdm import tqdm
 from typing import Optional, Union, List
 import numpy as np
@@ -160,12 +161,12 @@ def custom_transcribe(
 # Apply the monkeypatch
 whisperx.asr.FasterWhisperPipeline.transcribe = custom_transcribe
 
-# --- CONFIGURATION (M1 Max Optimized) ---
+# --- CONFIGURATION (NVIDIA RTX Optimized) ---
 HF_TOKEN = os.getenv("HF_TOKEN") # Set this in your environment or a .env file
-DEVICE_ASR = "cpu"            # Transcription best on CPU (int8) for Mac
-DEVICE_OTHER = "mps"          # Align/Diarize best on GPU (MPS) for Mac
-BATCH_SIZE = 32               # Increased for 64GB RAM
-COMPUTE_TYPE = "int8"         # Best performance for long CPU sessions
+DEVICE_ASR = "cuda"           # Transcription BEST on GPU for NVIDIA
+DEVICE_OTHER = "cuda"         # Align/Diarize best on GPU (CUDA) for NVIDIA
+BATCH_SIZE = 16               # Adjusted for 8GB VRAM (32 might be tight)
+COMPUTE_TYPE = "float16"      # Best performance for NVIDIA GPUs
 LOG_FILE = "transcription_metrics.log"
 
 def log_metric(message):
@@ -208,16 +209,50 @@ def run_dnd_session():
     print(f"\n--- Auto-detecting Speaker IDs (SPEAKER_00, SPEAKER_01, etc.) ---")
     print(f"You can Find & Replace these labels in the output file later.")
 
+    # Normalization (Standard)
+    normalize_audio = True
+
     # High Accuracy Mode Prompt
     high_accuracy = input("Enable High Accuracy Mode (slower, runs on CPU)? [y/N]: ").strip().lower() == 'y'
     device_diarize = "cpu" if high_accuracy else DEVICE_OTHER
     
-    print(f"\n--- Processing Locally on M1 Max ---")
+    print(f"\n--- Processing Locally on NVIDIA GPU ---")
+
+    # 0. Preprocess Audio (Dynamic Normalization via FFmpeg)
+    temp_file_path = None
+    process_file_path = file_path
+    
+    if normalize_audio:
+        temp_file_path = os.path.splitext(file_path)[0] + "_normalizedTemp.wav"
+        print("\n--- Preprocessing Audio (Dynamic Normalization) ---")
+        with Timer("Audio Normalization") as t_norm:
+            # dynaudnorm: dynamic audio normalizer. f=150 (frame length), g=15 (Gaussian filter window)
+            # -y overwrites without asking
+            ffmpeg_cmd = [
+                "ffmpeg", "-y", "-i", file_path, 
+                "-af", "dynaudnorm=f=150:g=15", 
+                "-c:a", "pcm_f32le", 
+                temp_file_path
+            ]
+            try:
+                subprocess.run(ffmpeg_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                process_file_path = temp_file_path
+                log_metric("Audio normalization complete.")
+            except FileNotFoundError:
+                print("\n[ERROR] FFmpeg not found. Skipping normalization.")
+                print("Please install FFmpeg and add it to your system PATH to use this feature.\n")
+                process_file_path = file_path
+                temp_file_path = None
+            except subprocess.CalledProcessError as e:
+                print(f"\n[ERROR] FFmpeg failed during normalization: {e}")
+                print("Skipping normalization.\n")
+                process_file_path = file_path
+                temp_file_path = None
 
     # 1. Transcribe (Model is already cached on your 8TB drive!)
     with Timer("Loading & Transcription") as t_transcribe:
         model = whisperx.load_model("large-v3", DEVICE_ASR, compute_type=COMPUTE_TYPE)
-        audio = whisperx.load_audio(file_path)
+        audio = whisperx.load_audio(process_file_path)
         
         audio_duration = len(audio) / SAMPLE_RATE
         log_metric(f"Audio Duration: {str(datetime.timedelta(seconds=int(audio_duration)))}")
@@ -258,6 +293,11 @@ def run_dnd_session():
             for segment in final_result["segments"]:
                 speaker_id = segment.get("speaker", "UNKNOWN")
                 f.write(f"**{speaker_id}**: {segment['text'].strip()}  \n")
+
+    # 4. Cleanup
+    if temp_file_path and os.path.exists(temp_file_path):
+        os.remove(temp_file_path)
+        log_metric("Temporary normalized audio file removed.")
 
     overall_timer.__exit__(None, None, None) # Stop total timer
 
