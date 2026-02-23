@@ -9,6 +9,10 @@ import torch
 import time
 import datetime
 import subprocess
+import warnings
+
+# Suppress annoying pyannote/torchcodec warnings
+warnings.filterwarnings("ignore", module="pyannote.audio.core.io")
 
 # RTX 5000 Series (sm_120) Workaround: Disable cuDNN to prevent 'cudnnGetLibConfig Error 127'
 torch.backends.cudnn.enabled = False
@@ -238,7 +242,8 @@ def run_dnd_session():
                 temp_file_path
             ]
             try:
-                subprocess.run(ffmpeg_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                # shell=True helps resolve winget "Links" folder alias on Windows
+                subprocess.run(ffmpeg_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 process_file_path = temp_file_path
                 log_metric("Audio normalization complete.")
             except FileNotFoundError:
