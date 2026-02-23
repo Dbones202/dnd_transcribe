@@ -9,6 +9,9 @@ import torch
 import time
 import datetime
 import subprocess
+
+# RTX 5000 Series (sm_120) Workaround: Disable cuDNN to prevent 'cudnnGetLibConfig Error 127'
+torch.backends.cudnn.enabled = False
 from tqdm import tqdm
 from typing import Optional, Union, List
 import numpy as np
