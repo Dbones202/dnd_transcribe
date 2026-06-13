@@ -1,5 +1,10 @@
 # Audio files
 *.wav
+audio_files/
+
+# Transcripts and Voice Library
+transcripts/
+voice_library/
 
 # Virtual environments
 whisper_env/
@@ -11,10 +16,23 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Logs
+*.log
+
 # OS files
 .DS_Store
 Thumbs.db
 
 # VS Code
 .vscode/
+Audacity-Workspace
 Audacity-WhisperX.code-workspace
+
+# Secrets / Environment Configs
+.env
+.env.local
+.env.*
+
+# Temporary / Local Signatures
+diarize_sig.txt
+.claude/

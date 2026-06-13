@@ -1,4 +1,9 @@
 import os
+import ctypes
+from dotenv import load_dotenv
+load_dotenv() # Load the .env file immediately
+
+import gc
 # SECURITY PATCH: Tell PyTorch 2.6 to trust the local models you just downloaded
 os.environ["TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD"] = "1" 
 
@@ -10,6 +15,8 @@ import time
 import datetime
 import subprocess
 import warnings
+import scipy.io.wavfile as wavfile
+import winsound
 
 # Suppress annoying pyannote/torchcodec warnings
 warnings.filterwarnings("ignore", module="pyannote.audio.core.io")
@@ -26,6 +33,30 @@ from whisperx.vads import Vad, Pyannote
 from faster_whisper.tokenizer import Tokenizer
 
 # --- HELPER CLASSES & MONKEYPATCHING ---
+
+class WindowsSleepPreventer:
+    """Context manager to prevent Windows from sleeping during execution."""
+    ES_CONTINUOUS = 0x80000000
+    ES_SYSTEM_REQUIRED = 0x00000001
+
+    def __enter__(self):
+        try:
+            # Prevent system sleep
+            ctypes.windll.kernel32.SetThreadExecutionState(
+                self.ES_CONTINUOUS | self.ES_SYSTEM_REQUIRED
+            )
+            print("\n[System] Windows sleep mode temporarily disabled for this run.")
+        except Exception as e:
+            print(f"\n[System] Warning: Could not disable Windows sleep mode: {e}")
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        try:
+            # Re-enable system sleep
+            ctypes.windll.kernel32.SetThreadExecutionState(self.ES_CONTINUOUS)
+            print("[System] Windows sleep mode settings restored.")
+        except Exception:
+            pass
 
 class TqdmList(list):
     """
@@ -172,8 +203,8 @@ whisperx.asr.FasterWhisperPipeline.transcribe = custom_transcribe
 HF_TOKEN = os.getenv("HF_TOKEN") # Set this in your environment or a .env file
 DEVICE_ASR = "cuda"           # Transcription BEST on GPU for NVIDIA
 DEVICE_OTHER = "cuda"         # Align/Diarize best on GPU (CUDA) for NVIDIA
-BATCH_SIZE = 16               # Adjusted for 8GB VRAM (32 might be tight)
-COMPUTE_TYPE = "float16"      # Best performance for NVIDIA GPUs
+BATCH_SIZE = 8                # Lowered from 16 -> 8 to prevent RTX 5060 Ti 8GB Out Of Memory
+COMPUTE_TYPE = "float16"         # Best performance and accuracy for modern NVIDIA GPUs (RTX 5060 Ti handles float16 easily)
 LOG_FILE = "transcription_metrics.log"
 
 def log_metric(message):
@@ -212,16 +243,15 @@ def run_dnd_session():
         print("File not found!")
         return
 
-    num_speakers = int(input("Total speakers (Players + DM)? "))
     print(f"\n--- Auto-detecting Speaker IDs (SPEAKER_00, SPEAKER_01, etc.) ---")
-    print(f"You can Find & Replace these labels in the output file later.")
+    print(f"You will be prompted to identify unknown speakers interactively.")
 
     # Normalization (Standard)
     normalize_audio = True
 
-    # High Accuracy Mode Prompt
-    high_accuracy = input("Enable High Accuracy Mode (slower, runs on CPU)? [y/N]: ").strip().lower() == 'y'
-    device_diarize = "cpu" if high_accuracy else DEVICE_OTHER
+    # Diarization Device Prompt (Diarization on CPU is only needed as a fallback for VRAM/CUDA limits)
+    run_on_cpu = input("Run Diarization on CPU instead of GPU? (Only recommended if you experience GPU/CUDA errors) [y/N]: ").strip().lower() == 'y'
+    device_diarize = "cpu" if run_on_cpu else DEVICE_OTHER
     
     print(f"\n--- Processing Locally on NVIDIA GPU ---")
 
@@ -259,13 +289,18 @@ def run_dnd_session():
 
     # 1. Transcribe (Model is already cached on your 8TB drive!)
     with Timer("Loading & Transcription") as t_transcribe:
-        model = whisperx.load_model("large-v3", DEVICE_ASR, compute_type=COMPUTE_TYPE)
+        model = whisperx.load_model("large-v3-turbo", DEVICE_ASR, compute_type=COMPUTE_TYPE)
         audio = whisperx.load_audio(process_file_path)
         
         audio_duration = len(audio) / SAMPLE_RATE
         log_metric(f"Audio Duration: {str(datetime.timedelta(seconds=int(audio_duration)))}")
         
-        result = model.transcribe(audio, batch_size=BATCH_SIZE)
+        result = model.transcribe(audio, batch_size=BATCH_SIZE, language="en")
+        
+    # Free up VRAM used by the massive transcription model before moving to alignment
+    del model
+    gc.collect()
+    torch.cuda.empty_cache()
     
     # 2. Align & Diarize (THE FIX IS HERE: whisperx.diarize)
     with Timer("Alignment") as t_align:
@@ -275,6 +310,11 @@ def run_dnd_session():
         result["segments"] = TqdmList(result["segments"], desc="Aligning", unit="seg")
         
         result = whisperx.align(result["segments"], model_a, metadata, audio, DEVICE_OTHER)
+        
+    # Free up VRAM from the alignment model before starting the diarization pipeline
+    del model_a
+    gc.collect()
+    torch.cuda.empty_cache()
     
     # Since TqdmList was exhausted by align, we might need it back as a regular list if we use it again, 
     # but whisperx.align returns a new dictionary with new segments, so we are good.
@@ -283,24 +323,195 @@ def run_dnd_session():
 
     # Use the new sub-module path for diarization
     with Timer("Diarization") as t_diarize:
-        if high_accuracy:
-            print(">> Running Diarization on CPU for maximum precision...")
-        diarize_model = whisperx.diarize.DiarizationPipeline(use_auth_token=HF_TOKEN, device=device_diarize)
-        diarize_segments = diarize_model(audio, min_speakers=num_speakers, max_speakers=num_speakers, num_speakers=num_speakers)
+        if device_diarize == "cpu":
+            print(">> Running Diarization on CPU...")
+        diarize_model = whisperx.diarize.DiarizationPipeline(token=HF_TOKEN, device=device_diarize)
+        diarize_segments = diarize_model(audio)
+        
+    # Free up VRAM one more time
+    del diarize_model
+    gc.collect()
+    torch.cuda.empty_cache()
     
     # 3. Final Merge
     with Timer("Merge & Save") as t_merge:
         final_result = whisperx.assign_word_speakers(diarize_segments, result)
-        output_filename = os.path.splitext(file_path)[0] + "_session_log.md"
         
-        with open(output_filename, "w") as f:
+        # --- CONTINUOUS SPEAKER RECOGNITION (VOICE HARVESTING) ---
+        print("\n--- Identifying Speakers vs Voice Library ---")
+        try:
+            import glob
+            from scipy.spatial.distance import cosine
+            from pyannote.audio import Model, Inference
+            
+            hf_token_lib = os.getenv("HF_TOKEN")
+            voice_files = glob.glob(os.path.join("voice_library", "*.npy"))
+            
+            if voice_files:
+                library_models = {}
+                for vf in voice_files:
+                    name = os.path.splitext(os.path.basename(vf))[0]
+                    library_models[name] = np.load(vf)
+                    
+                print(f"Loaded {len(library_models)} voices from voice_library/")
+                
+                # Load Pyannote Embedding model
+                emb_model = Model.from_pretrained("pyannote/wespeaker-voxceleb-resnet34-LM", use_auth_token=hf_token_lib)
+                if not emb_model:
+                     emb_model = Model.from_pretrained("pyannote/embedding", use_auth_token=hf_token_lib)
+                
+                device_emb = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                emb_model.to(device_emb)
+                inference = Inference(emb_model, window="whole")
+                
+                # Group segments by SPEAKER_XX
+                speaker_chunks = {}
+                for seg in final_result["segments"]:
+                    spk = seg.get("speaker", "UNKNOWN")
+                    if spk.startswith("SPEAKER_"):
+                        if spk not in speaker_chunks:
+                            speaker_chunks[spk] = []
+                        speaker_chunks[spk].append((seg["start"], seg["end"]))
+                        
+                speaker_mapping = {}
+                # Calculate embeddings for each unknown speaker
+                for spk, chunks in speaker_chunks.items():
+                    chunks.sort(key=lambda x: x[1] - x[0], reverse=True)
+                    spk_embeds = []
+                    total_dur = 0.0
+                    for c_start, c_end in chunks:
+                        dur = c_end - c_start
+                        if dur < 1.0: continue
+                        
+                        s_samp = int(c_start * SAMPLE_RATE)
+                        e_samp = int(c_end * SAMPLE_RATE)
+                        c_audio = audio[s_samp:e_samp]
+                        t_chunk = torch.from_numpy(c_audio).unsqueeze(0)
+                        
+                        try:
+                            emb = inference({"waveform": t_chunk, "sample_rate": SAMPLE_RATE})
+                            spk_embeds.append(emb)
+                            total_dur += dur
+                            if total_dur > 20.0: break # Use max 20 seconds of pure speech audio for identification
+                        except Exception as e:
+                            pass
+                            
+                    if spk_embeds:
+                        avg_emb = np.mean(spk_embeds, axis=0)
+                        # Compare against library
+                        best_match = None
+                        best_score = -1.0
+                        for lib_name, lib_emb in library_models.items():
+                            # cosine function from scipy returns distance (0 is identical)
+                            # similarity score is 1 - distance
+                            sim = 1.0 - cosine(avg_emb.flatten(), lib_emb.flatten())
+                            if sim > best_score:
+                                best_score = sim
+                                best_match = lib_name
+                                
+                        # Confidence threshold: 0.90 is strict enough to avoid ambiguous/false matches
+                        if best_score > 0.90 and best_match:
+                            print(f"[Match] Reassigned {spk} -> {best_match} (Similarity: {round(best_score*100, 1)}%)")
+                            speaker_mapping[spk] = best_match
+                        else:
+                            if best_match and best_score > 0.40:
+                                best_str = f"Ambiguous match with {best_match} at {round(best_score*100, 1)}%"
+                            else:
+                                best_str = f"Best was {best_match} at {round(best_score*100, 1)}%" if best_match else "No library match"
+                            
+                            print(f"\n[No Match] {spk} remains unknown ({best_str})")
+                            
+                            # Interactive Prompt Setup
+                            # Find the longest continuous chunk for this speaker to play back
+                            best_chunk = chunks[0]
+                            st_samp = int(best_chunk[0] * SAMPLE_RATE)
+                            # Limit playback to max 8 seconds
+                            playback_dur = min(8.0, best_chunk[1] - best_chunk[0])
+                            en_samp = st_samp + int(playback_dur * SAMPLE_RATE)
+                            
+                            playback_audio = audio[st_samp:en_samp]
+                            temp_playback_file = "temp_playback.wav"
+                            
+                            # whisperx audio is float32 [-1.0, 1.0]. Convert to int16 for winsound compat
+                            scaled_audio = np.int16(playback_audio * 32767)
+                            wavfile.write(temp_playback_file, SAMPLE_RATE, scaled_audio)
+                            
+                            while True:
+                                print(f"Playing audio sample for {spk}...")
+                                winsound.PlaySound(temp_playback_file, winsound.SND_FILENAME)
+                                
+                                user_input = input(f"Who is speaking? (Type name, press Enter to keep as {spk}, type 'replay' to listen again): ").strip()
+                                
+                                if user_input.lower() == 'replay':
+                                    continue
+                                elif user_input == "":
+                                    print(f"Leaving as {spk}")
+                                    break
+                                else:
+                                    # User provided a name!
+                                    safe_name = "".join([c for c in user_input if c.isalpha() or c.isdigit()]).rstrip()
+                                    speaker_mapping[spk] = safe_name
+                                    print(f"Assigned {spk} -> {safe_name}")
+                                    
+                                    # Train the model instantly for this new name using the avg_emb we just calculated
+                                    out_file = os.path.join("voice_library", f"{safe_name}.npy")
+                                    os.makedirs("voice_library", exist_ok=True)
+                                    
+                                    if os.path.exists(out_file):
+                                        print(f"  -> Found existing profile for {safe_name}. Refining voice print...")
+                                        old_embedding = np.load(out_file)
+                                        # Average the old and new embeddings
+                                        avg_emb = (old_embedding + avg_emb) / 2.0
+                                        
+                                    np.save(out_file, avg_emb)
+                                    print(f"  -> Saved {out_file} (Harvested {round(total_dur, 1)} seconds of speech)")
+                                    
+                                    # Dynamically update the in-memory library so it can be used for subsequent unknown speakers in THIS run
+                                    library_models[safe_name] = avg_emb
+                                    break
+                                    
+                            # Cleanup playback file
+                            if os.path.exists(temp_playback_file):
+                                os.remove(temp_playback_file)
+                            
+                # Apply mapping
+                for seg in final_result["segments"]:
+                    spk = seg.get("speaker", "UNKNOWN")
+                    if spk in speaker_mapping:
+                        seg["speaker"] = speaker_mapping[spk]
+                        
+                # Free VRAM
+                del emb_model
+                gc.collect()
+                torch.cuda.empty_cache()
+            else:
+                print("No voices found in voice_library/. Skipping identification.")
+                
+        except Exception as e:
+            print(f"Error during speaker identification: {e}")
+            
+        print("\n--- Writing Markdown ---")
+        orig_name = os.path.basename(process_file_path)
+        # Handle original temp normalization
+        if temp_file_path and process_file_path == temp_file_path:
+            orig_name = os.path.basename(file_path)
+            
+        output_filename = os.path.join("transcripts", os.path.splitext(orig_name)[0] + "_session_log.md")
+        os.makedirs(os.path.dirname(output_filename), exist_ok=True)
+        
+        with open(output_filename, "w", encoding="utf-8") as f:
             f.write(f"# D&D Session Transcript\n\n")
             f.write(f"> Processed on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
             f.write(f"> Audio Duration: {str(datetime.timedelta(seconds=int(audio_duration)))}\n\n")
             
             for segment in final_result["segments"]:
                 speaker_id = segment.get("speaker", "UNKNOWN")
-                f.write(f"**{speaker_id}**: {segment['text'].strip()}  \n")
+                
+                # Create nice [0:01:23 - 0:01:45] timestamps
+                st_str = str(datetime.timedelta(seconds=int(segment['start'])))
+                et_str = str(datetime.timedelta(seconds=int(segment['end'])))
+                
+                f.write(f"[{st_str} - {et_str}] **{speaker_id}**: {segment['text'].strip()}  \n")
 
     # 4. Cleanup
     if temp_file_path and os.path.exists(temp_file_path):
@@ -323,5 +534,124 @@ def run_dnd_session():
 
     print(f"\nSuccess! Transcript saved to: {output_filename}")
 
+
+# --- VOICE HARVESTING (LIBRARY CREATION) ---
+
+def time_str_to_seconds(time_str):
+    import re
+    parts = time_str.split(':')
+    if len(parts) == 3:
+        h, m, s = [int(p) for p in parts]
+        return h * 3600 + m * 60 + s
+    elif len(parts) == 2:
+        m, s = [int(p) for p in parts]
+        return m * 60 + s
+    return 0
+
+def parse_markdown_for_speakers(md_path):
+    import re
+    speaker_segments = {}
+    pattern = re.compile(r'^\[(\d{1,2}:\d{2}:\d{2}) - (\d{1,2}:\d{2}:\d{2})\] \*\*(.+?)\*\*:')
+    
+    with open(md_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            match = pattern.search(line)
+            if match:
+                start_str, end_str, speaker = match.groups()
+                start_sec = time_str_to_seconds(start_str)
+                end_sec = time_str_to_seconds(end_str)
+                
+                if speaker.startswith("SPEAKER_"):
+                    continue
+                    
+                if speaker not in speaker_segments:
+                    speaker_segments[speaker] = []
+                speaker_segments[speaker].append((start_sec, end_sec))
+    return speaker_segments
+
+def train_voices(md_path, audio_path):
+    if not os.path.exists(md_path) or not os.path.exists(audio_path):
+        print("Error: Markdown or audio file not found.")
+        return
+        
+    os.makedirs("voice_library", exist_ok=True)
+    speaker_segments = parse_markdown_for_speakers(md_path)
+    
+    if not speaker_segments:
+        print("No valid named speakers found. Did you edit the SPEAKER_XX tags and leave the timestamps?")
+        return
+        
+    print(f"Found {len(speaker_segments)} unique named speakers.")
+    
+    HF_TOKEN = os.getenv("HF_TOKEN")
+    from pyannote.audio import Model, Inference
+    
+    print("Loading PyAnnote Embedding Model...")
+    model = Model.from_pretrained("pyannote/wespeaker-voxceleb-resnet34-LM", use_auth_token=HF_TOKEN)
+    if not model:
+        model = Model.from_pretrained("pyannote/embedding", use_auth_token=HF_TOKEN)
+    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    inference = Inference(model, window="whole")
+    
+    print(f"Loading Audio {audio_path}...")
+    audio_data = whisperx.audio.load_audio(audio_path)
+    
+    for speaker, segments in speaker_segments.items():
+        print(f"\nProcessing embeddings for: {speaker}")
+        speaker_embeddings = []
+        total_duration = 0.0
+        segments.sort(key=lambda x: x[1] - x[0], reverse=True)
+        
+        for start_sec, end_sec in segments:
+            duration = end_sec - start_sec
+            if duration < 1.0: continue
+                
+            start_sample = int(start_sec * whisperx.audio.SAMPLE_RATE)
+            end_sample = int(end_sec * whisperx.audio.SAMPLE_RATE)
+            chunk_audio = audio_data[start_sample:end_sample]
+            tensor_chunk = torch.from_numpy(chunk_audio).unsqueeze(0)
+            
+            try:
+                emb = inference({"waveform": tensor_chunk, "sample_rate": 16000})
+                speaker_embeddings.append(emb)
+                total_duration += duration
+                if total_duration > 20.0: break
+            except Exception as e:
+                pass
+                
+        if speaker_embeddings:
+            avg_embedding = np.mean(speaker_embeddings, axis=0)
+            safe_name = "".join([c for c in speaker if c.isalpha() or c.isdigit()]).rstrip()
+            out_file = os.path.join("voice_library", f"{safe_name}.npy")
+            
+            if os.path.exists(out_file):
+                print(f"  -> Found existing profile for {speaker}. Refining voice print...")
+                old_embedding = np.load(out_file)
+                # Average the old and new embeddings to refine over time
+                avg_embedding = (old_embedding + avg_embedding) / 2.0
+                
+            np.save(out_file, avg_embedding)
+            print(f"  -> Saved {out_file} (Harvested {round(total_duration, 1)} seconds)")
+        else:
+            print(f"  -> Failed to harvest audio for {speaker}")
+
+
 if __name__ == "__main__":
-    run_dnd_session()
+    import argparse
+    parser = argparse.ArgumentParser(description="D&D Transcription and Voice Training")
+    parser.add_argument("--train", action="store_true", help="Harvest voices from an annotated markdown transcript to build the voice_library.")
+    parser.add_argument("--md", type=str, help="Path to the edited markdown (.md) file (for --train)")
+    parser.add_argument("--audio", type=str, help="Path to the original audio (.wav) file (for --train)")
+    
+    args = parser.parse_args()
+    
+    with WindowsSleepPreventer():
+        if args.train:
+            if not args.md or not args.audio:
+                print("Error: --train requires both --md and --audio arguments.")
+            else:
+                train_voices(args.md, args.audio)
+        else:
+            run_dnd_session()
