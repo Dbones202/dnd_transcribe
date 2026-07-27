@@ -42,12 +42,12 @@ source venv/Scripts/activate
 To start transcribing a D&D session recording:
 
 1. **Place your recording** (e.g., `.wav`, `.mp3`) in the `audio_files/` directory.
-2. Run the main script:
+2. Run the main script with the `-a` / `--audio` flag (allows **Tab auto-completion** in PowerShell/Terminal):
    ```powershell
-   python dnd_transcribe.py
+   python dnd_transcribe.py -a audio_files/session_1.wav
    ```
+   *(If omitted, the script will prompt you interactively for the recording path).*
 3. **Interactive Prompts**:
-   - **Recording Path**: Enter the relative path to your file (e.g., `audio_files/session_1.wav`).
    - **CPU vs GPU Diarization**: You'll be asked if you want to run speaker diarization on CPU instead of GPU. Press `Enter` (default is GPU) unless you run out of GPU VRAM (CUDA errors).
    - **Interactive Speaker Identification**: During transcription, the tool checks speaker audio prints against `voice_library/`. If it doesn't find a matching voice profile, it will play a short audio clip of the unknown speaker (`winsound`) and prompt you to name them. Typing a name will instantly save that player's voice print to the library.
 
@@ -88,9 +88,39 @@ The script scans the markdown file, extracts audio segments where named speakers
 
 ---
 
+## 🤖 Local LLM Transcript Refinement (LM Studio + Gemma 4)
+
+`dnd_transcribe.py` supports optional post-processing via **LM Studio** using local models like **Gemma 4 / 4B**.
+
+### How It Works
+* After WhisperX and PyAnnote finish and free GPU VRAM, the script checks if LM Studio is running on `http://localhost:1234/v1`.
+* If detected, it sends transcript blocks to Gemma to correct D&D homophones (e.g. *"man to core"* $\rightarrow$ *"manticore"*, *"tea fling"* $\rightarrow$ *"tiefling"*), fix punctuation, and clean up audio stutter repetitions while keeping **100% of line order, dialogue, timestamps, and speaker tags**.
+* If LM Studio is offline or unreachable, the script automatically skips LLM post-processing and saves the raw transcript smoothly.
+
+### Usage
+* **Default (LLM Enabled if active)**: `python dnd_transcribe.py`
+* **Skip LLM Post-Processing**: `python dnd_transcribe.py --no-llm`
+
+---
+
+## 🎙️ Recommended Audio Preparation (Audacity Workflow)
+
+Before feeding session audio to WhisperX, prepping audio in Audacity ensures maximum transcription accuracy:
+
+1. **Noise Reduction**: Sample 2–3s of room silence $\rightarrow$ *Effect > Noise Removal > Noise Reduction* (Settings: 12dB, Sensitivity 6).
+2. **Truncate Silence**: Cut long pauses $\rightarrow$ *Effect > Special > Truncate Silence* (Threshold -35dB to -40dB, Duration 1.0s, Truncate to 0.5s).
+3. **Compressor**: Equalize quiet and loud voices $\rightarrow$ *Effect > Volume and Compression > Compressor* (Threshold -18dB, Ratio 3:1).
+4. **Filter Curve EQ**: Remove low-end table thumps $\rightarrow$ *Effect > EQ and Filters > Filter Curve EQ > Presets: Low Roll-off for Speech*.
+5. **Normalize**: Consistent peak amplitude $\rightarrow$ *Effect > Volume and Compression > Normalize* (Peak -1.0 dB).
+
+> [!IMPORTANT]
+> **Audio Consistency Note**: Always use the **exact same prepped/truncated audio file** for both transcription (`python dnd_transcribe.py`) and subsequent voice harvesting (`python dnd_transcribe.py --train`).
+
+---
+
 ## 🗂️ Folder Structure
 
-- `audio_files/` — Put your raw game session recording files here.
+- `audio_files/` — Put your raw or prepped game session recording files here.
 - `transcripts/` — Output folder for generated Markdown transcripts.
 - `voice_library/` — Contains mathematical voice profiles (`.npy` files) for players.
 - `venv/` — Python virtual environment containing WhisperX, PyTorch, and other packages.
@@ -99,6 +129,7 @@ The script scans the markdown file, extracts audio segments where named speakers
 
 ## ⚙️ Configuration & Prerequisites
 
+- **LM Studio (Optional)**: Start LM Studio's Local Server on port `1234` with Gemma 4 / 4B loaded for automated transcript refinement.
 - **Hugging Face Token**: Speaker diarization uses PyAnnote. Ensure you have a `.env` file in the root directory containing your Hugging Face read token:
   ```env
   HF_TOKEN="hf_your_token_here"

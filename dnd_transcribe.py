@@ -1,5 +1,16 @@
 import os
+import sys
+
+# Ensure venv/Scripts (containing ffmpeg) is always present in PATH for subprocess calls
+_script_dir = os.path.dirname(os.path.abspath(__file__))
+_venv_scripts = os.path.join(_script_dir, "venv", "Scripts")
+if os.path.exists(_venv_scripts) and _venv_scripts not in os.environ.get("PATH", ""):
+    os.environ["PATH"] = _venv_scripts + os.pathsep + os.environ.get("PATH", "")
+
 import ctypes
+import json
+import urllib.request
+import urllib.error
 from dotenv import load_dotenv
 load_dotenv() # Load the .env file immediately
 
@@ -234,13 +245,120 @@ class Timer:
     def format_duration(self):
         return str(datetime.timedelta(seconds=int(self.duration)))
 
-def run_dnd_session():
+def refine_transcript_with_llm(formatted_lines: List[str], api_url: str = "http://localhost:1234/v1") -> List[str]:
+    """
+    Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio REST API)
+    to refine D&D terms, homophones, punctuation, and stutter artifacts without altering verbatim meaning or line structure.
+    """
+    endpoint = f"{api_url.rstrip('/')}/chat/completions"
+    
+    # 1. Health check to test if LM Studio server is online AND a model is loaded
+    try:
+        req = urllib.request.Request(f"{api_url.rstrip('/')}/models", method="GET")
+        with urllib.request.urlopen(req, timeout=3.0) as resp:
+            if resp.status != 200:
+                print(f"\n[LM Studio WARNING] Server reachable at {api_url} but returned status {resp.status}.")
+                print("  -> Please verify LM Studio server status. Skipping LLM refinement.\n")
+                return formatted_lines
+            
+            res_body = json.loads(resp.read().decode("utf-8"))
+            models_data = res_body.get("data", [])
+            if not models_data:
+                print(f"\n[LM Studio WARNING] Local LLM server detected at {api_url}, but NO MODEL IS LOADED!")
+                print("  -> Please load a model (e.g. Gemma, Llama 3) inside LM Studio.")
+                print("  -> Skipping LLM refinement for this session.\n")
+                return formatted_lines
+            
+            loaded_model_id = models_data[0].get("id", "Unknown Model")
+            print(f"\n[LM Studio] Connected to local server. Loaded model: '{loaded_model_id}'")
+
+    except Exception as e:
+        print(f"\n[LM Studio WARNING] Local LLM server not detected at {api_url}.")
+        print("  -> Please start the LM Studio server (Developer -> Local Server) and load a model.")
+        print("  -> Skipping LLM refinement for this session.\n")
+        return formatted_lines
+
+    print("\n--- Refining Transcript with Local LLM (LM Studio) ---")
+    print("[NOTICE] Processing LLM batches... responses can take 1-3 minutes per batch depending on model & hardware.")
+    print("[NOTICE] Batch HTTP timeout is set to 300s (5 minutes).\n")
+    
+    system_prompt = (
+        "You are an expert editor for Dungeons & Dragons tabletop session audio transcripts.\n"
+        "Your task is to refine the provided transcript lines for accuracy:\n"
+        "1. Correct mis-transcribed D&D vocabulary, spell names, character names, and homophones "
+        "(e.g., 'man to core' -> 'manticore', 'tea fling' -> 'tiefling', 'elder itch' -> 'Eldritch').\n"
+        "2. Fix missing punctuation, capitalization, and remove hallucinated audio repetitions (e.g., 'the the the').\n"
+        "3. STRICT RULE: Keep every timestamp '[HH:MM:SS - HH:MM:SS]' and speaker tag '**Speaker Name**:' EXACTLY unchanged.\n"
+        "4. STRICT RULE: Do NOT summarize, drop, or alter the core meaning of any line. Keep the line count and line order identical.\n"
+        "Output ONLY the corrected transcript lines."
+    )
+
+    batch_size = 25
+    refined_lines = []
+    total_batches = (len(formatted_lines) + batch_size - 1) // batch_size
+    
+    for i in range(0, len(formatted_lines), batch_size):
+        batch_num = i // batch_size + 1
+        chunk = formatted_lines[i:i + batch_size]
+        prompt_content = "\n".join(chunk)
+        
+        print(f"  -> Processing batch {batch_num}/{total_batches} ({len(chunk)} lines)... (Waiting for LLM response)")
+        
+        payload = {
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Refine these transcript lines:\n\n{prompt_content}"}
+            ],
+            "temperature": 0.1,
+            "max_tokens": 4096
+        }
+        
+        try:
+            req_data = json.dumps(payload).encode("utf-8")
+            req = urllib.request.Request(
+                endpoint, 
+                data=req_data, 
+                headers={"Content-Type": "application/json"},
+                method="POST"
+            )
+            # Set timeout to 300.0s (5 minutes) for long generation times
+            with urllib.request.urlopen(req, timeout=300.0) as resp:
+                res_body = json.loads(resp.read().decode("utf-8"))
+                output_text = res_body["choices"][0]["message"]["content"].strip()
+                
+                output_lines = [l for l in output_text.splitlines() if l.strip()]
+                if len(output_lines) == len(chunk):
+                    refined_lines.extend(output_lines)
+                    print(f"     Batch {batch_num}/{total_batches} completed successfully.")
+                else:
+                    print(f"  [LLM Warning] Line count mismatch in batch {batch_num} (expected {len(chunk)}, got {len(output_lines)}). Keeping raw chunk.")
+                    refined_lines.extend(chunk)
+        except urllib.error.HTTPError as e:
+            if e.code == 400:
+                print(f"  [LLM Error] Batch {batch_num} failed (HTTP 400 Bad Request): Ensure a model is loaded in LM Studio. Keeping raw chunk.")
+            else:
+                print(f"  [LLM Error] Batch {batch_num} failed with HTTP {e.code}: {e.reason}. Keeping raw chunk.")
+            refined_lines.extend(chunk)
+        except Exception as e:
+            print(f"  [LLM Error] Failed to refine batch {batch_num}: {e}. Keeping raw chunk.")
+            refined_lines.extend(chunk)
+            
+    print("[LM Studio] LLM refinement complete.")
+    return refined_lines
+
+def run_dnd_session(audio_path=None, skip_llm=False):
     overall_timer = Timer("Total Session")
     overall_timer.__enter__() # Manually start total timer
 
-    file_path = input("Enter path to recording: ").strip()
-    if not os.path.exists(file_path):
-        print("File not found!")
+    if not audio_path:
+        file_path = input("Enter path to recording: ").strip()
+    else:
+        file_path = audio_path.strip()
+
+    file_path = file_path.strip('"\'')
+
+    if not file_path or not os.path.exists(file_path):
+        print(f"File not found: '{file_path}'")
         return
 
     print(f"\n--- Auto-detecting Speaker IDs (SPEAKER_00, SPEAKER_01, etc.) ---")
@@ -263,8 +381,6 @@ def run_dnd_session():
         temp_file_path = os.path.splitext(file_path)[0] + "_normalizedTemp.wav"
         print("\n--- Preprocessing Audio (Dynamic Normalization) ---")
         with Timer("Audio Normalization") as t_norm:
-            # dynaudnorm: dynamic audio normalizer. f=150 (frame length), g=15 (Gaussian filter window)
-            # -y overwrites without asking
             ffmpeg_cmd = [
                 "ffmpeg", "-y", "-i", file_path, 
                 "-af", "dynaudnorm=f=150:g=15", 
@@ -272,7 +388,6 @@ def run_dnd_session():
                 temp_file_path
             ]
             try:
-                # shell=True helps resolve winget "Links" folder alias on Windows
                 subprocess.run(ffmpeg_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 process_file_path = temp_file_path
                 log_metric("Audio normalization complete.")
@@ -287,7 +402,7 @@ def run_dnd_session():
                 process_file_path = file_path
                 temp_file_path = None
 
-    # 1. Transcribe (Model is already cached on your 8TB drive!)
+    # 1. Transcribe
     with Timer("Loading & Transcription") as t_transcribe:
         model = whisperx.load_model("large-v3-turbo", DEVICE_ASR, compute_type=COMPUTE_TYPE)
         audio = whisperx.load_audio(process_file_path)
@@ -297,47 +412,36 @@ def run_dnd_session():
         
         result = model.transcribe(audio, batch_size=BATCH_SIZE, language="en")
         
-    # Free up VRAM used by the massive transcription model before moving to alignment
     del model
     gc.collect()
     torch.cuda.empty_cache()
     
-    # 2. Align & Diarize (THE FIX IS HERE: whisperx.diarize)
+    # 2. Align & Diarize
     with Timer("Alignment") as t_align:
         model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=DEVICE_OTHER)
-        
-        # Wrap segments in TqdmList for alignment progress
         result["segments"] = TqdmList(result["segments"], desc="Aligning", unit="seg")
-        
         result = whisperx.align(result["segments"], model_a, metadata, audio, DEVICE_OTHER)
         
-    # Free up VRAM from the alignment model before starting the diarization pipeline
     del model_a
     gc.collect()
     torch.cuda.empty_cache()
     
-    # Since TqdmList was exhausted by align, we might need it back as a regular list if we use it again, 
-    # but whisperx.align returns a new dictionary with new segments, so we are good.
-
     print("\n--- Diarizing (Progress bar unavailable for this step) ---")
 
-    # Use the new sub-module path for diarization
     with Timer("Diarization") as t_diarize:
         if device_diarize == "cpu":
             print(">> Running Diarization on CPU...")
         diarize_model = whisperx.diarize.DiarizationPipeline(token=HF_TOKEN, device=device_diarize)
         diarize_segments = diarize_model(audio)
         
-    # Free up VRAM one more time
     del diarize_model
     gc.collect()
     torch.cuda.empty_cache()
     
-    # 3. Final Merge
+    # 3. Final Merge & Voice Identification
     with Timer("Merge & Save") as t_merge:
         final_result = whisperx.assign_word_speakers(diarize_segments, result)
         
-        # --- CONTINUOUS SPEAKER RECOGNITION (VOICE HARVESTING) ---
         print("\n--- Identifying Speakers vs Voice Library ---")
         try:
             import glob
@@ -355,7 +459,6 @@ def run_dnd_session():
                     
                 print(f"Loaded {len(library_models)} voices from voice_library/")
                 
-                # Load Pyannote Embedding model
                 emb_model = Model.from_pretrained("pyannote/wespeaker-voxceleb-resnet34-LM", use_auth_token=hf_token_lib)
                 if not emb_model:
                      emb_model = Model.from_pretrained("pyannote/embedding", use_auth_token=hf_token_lib)
@@ -364,7 +467,6 @@ def run_dnd_session():
                 emb_model.to(device_emb)
                 inference = Inference(emb_model, window="whole")
                 
-                # Group segments by SPEAKER_XX
                 speaker_chunks = {}
                 for seg in final_result["segments"]:
                     spk = seg.get("speaker", "UNKNOWN")
@@ -374,7 +476,6 @@ def run_dnd_session():
                         speaker_chunks[spk].append((seg["start"], seg["end"]))
                         
                 speaker_mapping = {}
-                # Calculate embeddings for each unknown speaker
                 for spk, chunks in speaker_chunks.items():
                     chunks.sort(key=lambda x: x[1] - x[0], reverse=True)
                     spk_embeds = []
@@ -392,24 +493,20 @@ def run_dnd_session():
                             emb = inference({"waveform": t_chunk, "sample_rate": SAMPLE_RATE})
                             spk_embeds.append(emb)
                             total_dur += dur
-                            if total_dur > 20.0: break # Use max 20 seconds of pure speech audio for identification
+                            if total_dur > 20.0: break
                         except Exception as e:
                             pass
                             
                     if spk_embeds:
                         avg_emb = np.mean(spk_embeds, axis=0)
-                        # Compare against library
                         best_match = None
                         best_score = -1.0
                         for lib_name, lib_emb in library_models.items():
-                            # cosine function from scipy returns distance (0 is identical)
-                            # similarity score is 1 - distance
                             sim = 1.0 - cosine(avg_emb.flatten(), lib_emb.flatten())
                             if sim > best_score:
                                 best_score = sim
                                 best_match = lib_name
                                 
-                        # Confidence threshold: 0.90 is strict enough to avoid ambiguous/false matches
                         if best_score > 0.90 and best_match:
                             print(f"[Match] Reassigned {spk} -> {best_match} (Similarity: {round(best_score*100, 1)}%)")
                             speaker_mapping[spk] = best_match
@@ -421,18 +518,14 @@ def run_dnd_session():
                             
                             print(f"\n[No Match] {spk} remains unknown ({best_str})")
                             
-                            # Interactive Prompt Setup
-                            # Find the longest continuous chunk for this speaker to play back
                             best_chunk = chunks[0]
                             st_samp = int(best_chunk[0] * SAMPLE_RATE)
-                            # Limit playback to max 8 seconds
                             playback_dur = min(8.0, best_chunk[1] - best_chunk[0])
                             en_samp = st_samp + int(playback_dur * SAMPLE_RATE)
                             
                             playback_audio = audio[st_samp:en_samp]
                             temp_playback_file = "temp_playback.wav"
                             
-                            # whisperx audio is float32 [-1.0, 1.0]. Convert to int16 for winsound compat
                             scaled_audio = np.int16(playback_audio * 32767)
                             wavfile.write(temp_playback_file, SAMPLE_RATE, scaled_audio)
                             
@@ -448,39 +541,32 @@ def run_dnd_session():
                                     print(f"Leaving as {spk}")
                                     break
                                 else:
-                                    # User provided a name!
                                     safe_name = "".join([c for c in user_input if c.isalpha() or c.isdigit()]).rstrip()
                                     speaker_mapping[spk] = safe_name
                                     print(f"Assigned {spk} -> {safe_name}")
                                     
-                                    # Train the model instantly for this new name using the avg_emb we just calculated
                                     out_file = os.path.join("voice_library", f"{safe_name}.npy")
                                     os.makedirs("voice_library", exist_ok=True)
                                     
                                     if os.path.exists(out_file):
                                         print(f"  -> Found existing profile for {safe_name}. Refining voice print...")
                                         old_embedding = np.load(out_file)
-                                        # Average the old and new embeddings
                                         avg_emb = (old_embedding + avg_emb) / 2.0
                                         
                                     np.save(out_file, avg_emb)
                                     print(f"  -> Saved {out_file} (Harvested {round(total_dur, 1)} seconds of speech)")
                                     
-                                    # Dynamically update the in-memory library so it can be used for subsequent unknown speakers in THIS run
                                     library_models[safe_name] = avg_emb
                                     break
                                     
-                            # Cleanup playback file
                             if os.path.exists(temp_playback_file):
                                 os.remove(temp_playback_file)
                             
-                # Apply mapping
                 for seg in final_result["segments"]:
                     spk = seg.get("speaker", "UNKNOWN")
                     if spk in speaker_mapping:
                         seg["speaker"] = speaker_mapping[spk]
                         
-                # Free VRAM
                 del emb_model
                 gc.collect()
                 torch.cuda.empty_cache()
@@ -492,35 +578,36 @@ def run_dnd_session():
             
         print("\n--- Writing Markdown ---")
         orig_name = os.path.basename(process_file_path)
-        # Handle original temp normalization
         if temp_file_path and process_file_path == temp_file_path:
             orig_name = os.path.basename(file_path)
             
         output_filename = os.path.join("transcripts", os.path.splitext(orig_name)[0] + "_session_log.md")
         os.makedirs(os.path.dirname(output_filename), exist_ok=True)
         
+        formatted_lines = []
+        for segment in final_result["segments"]:
+            speaker_id = segment.get("speaker", "UNKNOWN")
+            st_str = str(datetime.timedelta(seconds=int(segment['start'])))
+            et_str = str(datetime.timedelta(seconds=int(segment['end'])))
+            formatted_lines.append(f"[{st_str} - {et_str}] **{speaker_id}**: {segment['text'].strip()}")
+
+        if not skip_llm:
+            formatted_lines = refine_transcript_with_llm(formatted_lines)
+            
         with open(output_filename, "w", encoding="utf-8") as f:
             f.write(f"# D&D Session Transcript\n\n")
             f.write(f"> Processed on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
             f.write(f"> Audio Duration: {str(datetime.timedelta(seconds=int(audio_duration)))}\n\n")
-            
-            for segment in final_result["segments"]:
-                speaker_id = segment.get("speaker", "UNKNOWN")
-                
-                # Create nice [0:01:23 - 0:01:45] timestamps
-                st_str = str(datetime.timedelta(seconds=int(segment['start'])))
-                et_str = str(datetime.timedelta(seconds=int(segment['end'])))
-                
-                f.write(f"[{st_str} - {et_str}] **{speaker_id}**: {segment['text'].strip()}  \n")
+            for line in formatted_lines:
+                f.write(f"{line}  \n")
 
     # 4. Cleanup
     if temp_file_path and os.path.exists(temp_file_path):
         os.remove(temp_file_path)
         log_metric("Temporary normalized audio file removed.")
 
-    overall_timer.__exit__(None, None, None) # Stop total timer
+    overall_timer.__exit__(None, None, None)
 
-    # Print Summary Table
     print("\n" + "="*50)
     print(f"{'Phase':<25} | {'Duration':<15}")
     print("-" * 50)
@@ -643,15 +730,20 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="D&D Transcription and Voice Training")
     parser.add_argument("--train", action="store_true", help="Harvest voices from an annotated markdown transcript to build the voice_library.")
     parser.add_argument("--md", type=str, help="Path to the edited markdown (.md) file (for --train)")
-    parser.add_argument("--audio", type=str, help="Path to the original audio (.wav) file (for --train)")
+    parser.add_argument("-a", "--audio", type=str, help="Path to the audio recording file (supports tab completion).")
+    parser.add_argument("-i", "--input", type=str, help="Alias for --audio / -a.")
+    
+    parser.add_argument("--no-llm", action="store_true", help="Skip local LLM (LM Studio) transcript refinement.")
     
     args = parser.parse_args()
     
+    selected_audio = args.audio or args.input
+
     with WindowsSleepPreventer():
         if args.train:
-            if not args.md or not args.audio:
-                print("Error: --train requires both --md and --audio arguments.")
+            if not args.md or not selected_audio:
+                print("Error: --train requires both --md and --audio/-a arguments.")
             else:
-                train_voices(args.md, args.audio)
+                train_voices(args.md, selected_audio)
         else:
-            run_dnd_session()
+            run_dnd_session(audio_path=selected_audio, skip_llm=args.no_llm)
