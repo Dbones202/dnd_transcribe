@@ -51,8 +51,13 @@ To start transcribing a D&D session recording:
    - **CPU vs GPU Diarization**: You'll be asked if you want to run speaker diarization on CPU instead of GPU. Press `Enter` (default is GPU) unless you run out of GPU VRAM (CUDA errors).
    - **Interactive Speaker Identification**: During transcription, the tool checks speaker audio prints against `voice_library/`. If it doesn't find a matching voice profile, it will play a short audio clip of the unknown speaker (`winsound`) and prompt you to name them. Typing a name will instantly save that player's voice print to the library.
 
-The final Markdown transcript will be saved to:
-`transcripts/<recording_name>_session_log.md`
+### 📄 Output Files Generated
+
+When transcription finishes, the following files are automatically produced in `transcripts/`:
+- **`transcripts/<name>_session_log_raw.md`**: The complete, unedited WhisperX + PyAnnote transcript (available immediately in ~15 mins).
+- **`transcripts/<name>_session_log_refined.md`**: The post-LLM refined transcript (if AI refinement is active).
+- **`transcripts/<name>_ai_diff.md`**: A detailed **AI Evaluation & Diff Report** listing exact before-and-after line modifications, percentage of lines altered, and processing duration.
+- **`transcripts/<name>_session_log.md`**: The active session log (used for reading and voice training).
 
 ---
 
@@ -88,18 +93,36 @@ The script scans the markdown file, extracts audio segments where named speakers
 
 ---
 
-## 🤖 Local LLM Transcript Refinement (LM Studio + Gemma 4)
+## 🤖 Local LLM Transcript Refinement & Diff Evaluation
 
-`dnd_transcribe.py` supports optional post-processing via **LM Studio** using local models like **Gemma 4 / 4B**.
+`dnd_transcribe.py` supports post-processing via **LM Studio** using local models like **Gemma 4 / 4B** or **Llama 3**.
 
 ### How It Works
 * After WhisperX and PyAnnote finish and free GPU VRAM, the script checks if LM Studio is running on `http://localhost:1234/v1`.
-* If detected, it sends transcript blocks to Gemma to correct D&D homophones (e.g. *"man to core"* $\rightarrow$ *"manticore"*, *"tea fling"* $\rightarrow$ *"tiefling"*), fix punctuation, and clean up audio stutter repetitions while keeping **100% of line order, dialogue, timestamps, and speaker tags**.
-* If LM Studio is offline or unreachable, the script automatically skips LLM post-processing and saves the raw transcript smoothly.
+* If detected, it sends transcript batches to the LLM to correct D&D homophones (e.g. *"man to core"* $\rightarrow$ *"manticore"*, *"tea fling"* $\rightarrow$ *"tiefling"*), fix punctuation, and clean up audio stutter repetitions while keeping **100% of line order, dialogue, timestamps, and speaker tags**.
+* **Pre-AI & Post-AI Isolation**: The raw transcript is **always** saved to `_session_log_raw.md` first. The refined transcript is saved to `_session_log_refined.md`, and a diff report is generated at `_ai_diff.md` so you can evaluate the value of the AI edits.
 
-### Usage
-* **Default (LLM Enabled if active)**: `python dnd_transcribe.py`
-* **Skip LLM Post-Processing**: `python dnd_transcribe.py --no-llm`
+### Commands & Options
+* **Standard Transcription (LLM Enabled if active)**:
+  ```powershell
+  python dnd_transcribe.py -a audio_files/session_1.wav
+  ```
+* **Fast Transcription (Skip LLM Post-Processing)**:
+  ```powershell
+  python dnd_transcribe.py -a audio_files/session_1.wav --no-llm
+  ```
+* **Standalone AI Refinement** (Refine an existing raw transcript without re-running audio):
+  ```powershell
+  python dnd_transcribe.py --refine "transcripts/my_session_session_log_raw.md"
+  ```
+* **Compare Any Two Transcripts** (Generate an AI Diff Report between raw and refined files):
+  ```powershell
+  python dnd_transcribe.py --diff "transcripts/session_raw.md" "transcripts/session_refined.md"
+  ```
+* **Custom Batch Size & API Endpoint**:
+  ```powershell
+  python dnd_transcribe.py --refine "transcripts/session_raw.md" --batch-size 75 --api-url "http://localhost:1234/v1"
+  ```
 
 ---
 

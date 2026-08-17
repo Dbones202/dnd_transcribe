@@ -1,0 +1,2387 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "dnd_transcribe.py",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L1",
+      "id": "dnd_transcribe_py",
+      "community": 0,
+      "norm_label": "dnd_transcribe.py"
+    },
+    {
+      "label": "WindowsSleepPreventer",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L48",
+      "id": "dnd_dnd_transcribe_windowssleeppreventer",
+      "community": 8,
+      "norm_label": "windowssleeppreventer"
+    },
+    {
+      "label": ".__enter__()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L53",
+      "id": "dnd_dnd_transcribe_windowssleeppreventer_enter",
+      "community": 8,
+      "norm_label": ".__enter__()"
+    },
+    {
+      "label": ".__exit__()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L64",
+      "id": "dnd_dnd_transcribe_windowssleeppreventer_exit",
+      "community": 8,
+      "norm_label": ".__exit__()"
+    },
+    {
+      "label": "TqdmList",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L72",
+      "id": "dnd_dnd_transcribe_tqdmlist",
+      "community": 2,
+      "norm_label": "tqdmlist"
+    },
+    {
+      "label": "list",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "list",
+      "community": 2,
+      "norm_label": "list"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L77",
+      "id": "dnd_dnd_transcribe_tqdmlist_init",
+      "community": 2,
+      "norm_label": ".__init__()"
+    },
+    {
+      "label": ".__iter__()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L81",
+      "id": "dnd_dnd_transcribe_tqdmlist_iter",
+      "community": 2,
+      "norm_label": ".__iter__()"
+    },
+    {
+      "label": "custom_transcribe()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L87",
+      "id": "dnd_dnd_transcribe_custom_transcribe",
+      "community": 2,
+      "norm_label": "custom_transcribe()"
+    },
+    {
+      "label": "log_metric()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L221",
+      "id": "dnd_dnd_transcribe_log_metric",
+      "community": 0,
+      "norm_label": "log_metric()"
+    },
+    {
+      "label": "Timer",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L228",
+      "id": "dnd_dnd_transcribe_timer",
+      "community": 0,
+      "norm_label": "timer"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L229",
+      "id": "dnd_dnd_transcribe_timer_init",
+      "community": 2,
+      "norm_label": ".__init__()"
+    },
+    {
+      "label": ".__enter__()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L235",
+      "id": "dnd_dnd_transcribe_timer_enter",
+      "community": 0,
+      "norm_label": ".__enter__()"
+    },
+    {
+      "label": ".__exit__()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L240",
+      "id": "dnd_dnd_transcribe_timer_exit",
+      "community": 0,
+      "norm_label": ".__exit__()"
+    },
+    {
+      "label": ".format_duration()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L245",
+      "id": "dnd_dnd_transcribe_timer_format_duration",
+      "community": 0,
+      "norm_label": ".format_duration()"
+    },
+    {
+      "label": "generate_ai_diff()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L248",
+      "id": "dnd_dnd_transcribe_generate_ai_diff",
+      "community": 0,
+      "norm_label": "generate_ai_diff()"
+    },
+    {
+      "label": "refine_transcript_with_llm()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L348",
+      "id": "dnd_dnd_transcribe_refine_transcript_with_llm",
+      "community": 0,
+      "norm_label": "refine_transcript_with_llm()"
+    },
+    {
+      "label": "refine_existing_transcript()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L465",
+      "id": "dnd_dnd_transcribe_refine_existing_transcript",
+      "community": 0,
+      "norm_label": "refine_existing_transcript()"
+    },
+    {
+      "label": "run_dnd_session()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L534",
+      "id": "dnd_dnd_transcribe_run_dnd_session",
+      "community": 0,
+      "norm_label": "run_dnd_session()"
+    },
+    {
+      "label": "time_str_to_seconds()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L865",
+      "id": "dnd_dnd_transcribe_time_str_to_seconds",
+      "community": 0,
+      "norm_label": "time_str_to_seconds()"
+    },
+    {
+      "label": "parse_markdown_for_speakers()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L876",
+      "id": "dnd_dnd_transcribe_parse_markdown_for_speakers",
+      "community": 0,
+      "norm_label": "parse_markdown_for_speakers()"
+    },
+    {
+      "label": "train_voices()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L897",
+      "id": "dnd_dnd_transcribe_train_voices",
+      "community": 0,
+      "norm_label": "train_voices()"
+    },
+    {
+      "label": "diff_two_transcripts()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L966",
+      "id": "dnd_dnd_transcribe_diff_two_transcripts",
+      "community": 0,
+      "norm_label": "diff_two_transcripts()"
+    },
+    {
+      "label": "Context manager to prevent Windows from sleeping during execution.",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L49",
+      "id": "dnd_dnd_transcribe_rationale_49",
+      "community": 8,
+      "norm_label": "context manager to prevent windows from sleeping during execution."
+    },
+    {
+      "label": "A list wrapper that updates a tqdm progress bar when iterated.     Used to show",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L73",
+      "id": "dnd_dnd_transcribe_rationale_73",
+      "community": 2,
+      "norm_label": "a list wrapper that updates a tqdm progress bar when iterated.     used to show"
+    },
+    {
+      "label": "Monkeypatched version of whisperx.asr.FasterWhisperPipeline.transcribe     to u",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L99",
+      "id": "dnd_dnd_transcribe_rationale_99",
+      "community": 2,
+      "norm_label": "monkeypatched version of whisperx.asr.fasterwhisperpipeline.transcribe     to u"
+    },
+    {
+      "label": "Compares raw and refined transcript lines, computes change metrics,     and wri",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L256",
+      "id": "dnd_dnd_transcribe_rationale_256",
+      "community": 0,
+      "norm_label": "compares raw and refined transcript lines, computes change metrics,     and wri"
+    },
+    {
+      "label": "Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L353",
+      "id": "dnd_dnd_transcribe_rationale_353",
+      "community": 0,
+      "norm_label": "optional post-processing pass using local llm (e.g. gemma / llama via lm studio"
+    },
+    {
+      "label": "Standalone function to refine an existing raw markdown transcript file,     pro",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L470",
+      "id": "dnd_dnd_transcribe_rationale_470",
+      "community": 0,
+      "norm_label": "standalone function to refine an existing raw markdown transcript file,     pro"
+    },
+    {
+      "label": "Utility to compare any two transcript markdown files and output an AI diff repor",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L967",
+      "id": "dnd_dnd_transcribe_rationale_967",
+      "community": 0,
+      "norm_label": "utility to compare any two transcript markdown files and output an ai diff repor"
+    },
+    {
+      "label": "extract_voices.py",
+      "file_type": "code",
+      "source_file": "extract_voices.py",
+      "source_location": "L1",
+      "id": "extract_voices_py",
+      "community": 7,
+      "norm_label": "extract_voices.py"
+    },
+    {
+      "label": "time_str_to_seconds()",
+      "file_type": "code",
+      "source_file": "extract_voices.py",
+      "source_location": "L16",
+      "id": "dnd_extract_voices_time_str_to_seconds",
+      "community": 7,
+      "norm_label": "time_str_to_seconds()"
+    },
+    {
+      "label": "parse_markdown_for_speakers()",
+      "file_type": "code",
+      "source_file": "extract_voices.py",
+      "source_location": "L27",
+      "id": "dnd_extract_voices_parse_markdown_for_speakers",
+      "community": 7,
+      "norm_label": "parse_markdown_for_speakers()"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "extract_voices.py",
+      "source_location": "L56",
+      "id": "dnd_extract_voices_main",
+      "community": 7,
+      "norm_label": "main()"
+    },
+    {
+      "label": "Parses a markdown file and returns a dictionary of:     { \"SpeakerName\": [ (sta",
+      "file_type": "rationale",
+      "source_file": "extract_voices.py",
+      "source_location": "L28",
+      "id": "dnd_extract_voices_rationale_28",
+      "community": 7,
+      "norm_label": "parses a markdown file and returns a dictionary of:     { \"speakername\": [ (sta"
+    },
+    {
+      "label": "test_embed.py",
+      "file_type": "code",
+      "source_file": "test_embed.py",
+      "source_location": "L1",
+      "id": "test_embed_py",
+      "community": 9,
+      "norm_label": "test_embed.py"
+    },
+    {
+      "label": "test()",
+      "file_type": "code",
+      "source_file": "test_embed.py",
+      "source_location": "L9",
+      "id": "dnd_test_embed_test",
+      "community": 9,
+      "norm_label": "test()"
+    },
+    {
+      "label": "verify_gpu.py",
+      "file_type": "code",
+      "source_file": "verify_gpu.py",
+      "source_location": "L1",
+      "id": "verify_gpu_py",
+      "community": 10,
+      "norm_label": "verify_gpu.py"
+    },
+    {
+      "label": "verify()",
+      "file_type": "code",
+      "source_file": "verify_gpu.py",
+      "source_location": "L4",
+      "id": "dnd_verify_gpu_verify",
+      "community": 10,
+      "norm_label": "verify()"
+    },
+    {
+      "label": "AGENTS.md",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L1",
+      "id": "agents_md",
+      "community": 6,
+      "norm_label": "agents.md"
+    },
+    {
+      "label": "GitNexus \u2014 Code Intelligence",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L2",
+      "id": "dnd_agents_gitnexus_code_intelligence",
+      "community": 6,
+      "norm_label": "gitnexus \u2014 code intelligence"
+    },
+    {
+      "label": "Always Do",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L8",
+      "id": "dnd_agents_always_do",
+      "community": 6,
+      "norm_label": "always do"
+    },
+    {
+      "label": "Never Do",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L17",
+      "id": "dnd_agents_never_do",
+      "community": 6,
+      "norm_label": "never do"
+    },
+    {
+      "label": "Resources",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L24",
+      "id": "dnd_agents_resources",
+      "community": 6,
+      "norm_label": "resources"
+    },
+    {
+      "label": "CLI",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L33",
+      "id": "dnd_agents_cli",
+      "community": 6,
+      "norm_label": "cli"
+    },
+    {
+      "label": "CHANGELOG.md",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1",
+      "id": "changelog_md",
+      "community": 26,
+      "norm_label": "changelog.md"
+    },
+    {
+      "label": "Changelog",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1",
+      "id": "dnd_changelog_changelog",
+      "community": 26,
+      "norm_label": "changelog"
+    },
+    {
+      "label": "[1.1.0] - 2026-08-16",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L8",
+      "id": "dnd_changelog_1_1_0_2026_08_16",
+      "community": 26,
+      "norm_label": "[1.1.0] - 2026-08-16"
+    },
+    {
+      "label": "Added",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L10",
+      "id": "dnd_changelog_added",
+      "community": 26,
+      "norm_label": "added"
+    },
+    {
+      "label": "Changed",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L20",
+      "id": "dnd_changelog_changed",
+      "community": 26,
+      "norm_label": "changed"
+    },
+    {
+      "label": "Fixed",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L24",
+      "id": "dnd_changelog_fixed",
+      "community": 26,
+      "norm_label": "fixed"
+    },
+    {
+      "label": "CLAUDE.md",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L1",
+      "id": "claude_md",
+      "community": 5,
+      "norm_label": "claude.md"
+    },
+    {
+      "label": "GitNexus \u2014 Code Intelligence",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L2",
+      "id": "dnd_claude_gitnexus_code_intelligence",
+      "community": 5,
+      "norm_label": "gitnexus \u2014 code intelligence"
+    },
+    {
+      "label": "Always Do",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L8",
+      "id": "dnd_claude_always_do",
+      "community": 5,
+      "norm_label": "always do"
+    },
+    {
+      "label": "Never Do",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L17",
+      "id": "dnd_claude_never_do",
+      "community": 5,
+      "norm_label": "never do"
+    },
+    {
+      "label": "Resources",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L24",
+      "id": "dnd_claude_resources",
+      "community": 5,
+      "norm_label": "resources"
+    },
+    {
+      "label": "CLI",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L33",
+      "id": "dnd_claude_cli",
+      "community": 5,
+      "norm_label": "cli"
+    },
+    {
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "id": "readme_md",
+      "community": 1,
+      "norm_label": "readme.md"
+    },
+    {
+      "label": "D&D Session Transcriber & Voice Harvester",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "id": "dnd_readme_d_d_session_transcriber_voice_harvester",
+      "community": 1,
+      "norm_label": "d&d session transcriber & voice harvester"
+    },
+    {
+      "label": "\ud83d\udee0\ufe0f Step 1: Open the Virtual Environment (venv)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L9",
+      "id": "dnd_readme_step_1_open_the_virtual_environment_venv",
+      "community": 4,
+      "norm_label": "\ud83d\udee0\ufe0f step 1: open the virtual environment (venv)"
+    },
+    {
+      "label": "\ud83d\udd39 For PowerShell (Recommended on Windows)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L15",
+      "id": "dnd_readme_for_powershell_recommended_on_windows",
+      "community": 4,
+      "norm_label": "\ud83d\udd39 for powershell (recommended on windows)"
+    },
+    {
+      "label": "code:powershell (.\\venv\\Scripts\\Activate.ps1)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L16",
+      "id": "dnd_readme_codeblock_1",
+      "community": 4,
+      "norm_label": "code:powershell (.\\venv\\scripts\\activate.ps1)"
+    },
+    {
+      "label": "\ud83d\udd39 For Command Prompt (cmd)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L26",
+      "id": "dnd_readme_for_command_prompt_cmd",
+      "community": 4,
+      "norm_label": "\ud83d\udd39 for command prompt (cmd)"
+    },
+    {
+      "label": "code:cmd (venv\\Scripts\\activate.bat)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L27",
+      "id": "dnd_readme_codeblock_2",
+      "community": 4,
+      "norm_label": "code:cmd (venv\\scripts\\activate.bat)"
+    },
+    {
+      "label": "\ud83d\udd39 For Git Bash / WSL",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L31",
+      "id": "dnd_readme_for_git_bash_wsl",
+      "community": 4,
+      "norm_label": "\ud83d\udd39 for git bash / wsl"
+    },
+    {
+      "label": "code:bash (source venv/Scripts/activate)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L32",
+      "id": "dnd_readme_codeblock_3",
+      "community": 4,
+      "norm_label": "code:bash (source venv/scripts/activate)"
+    },
+    {
+      "label": "\ud83d\ude80 Step 2: How to Run the Software (Transcription)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L40",
+      "id": "dnd_readme_step_2_how_to_run_the_software_transcription",
+      "community": 1,
+      "norm_label": "\ud83d\ude80 step 2: how to run the software (transcription)"
+    },
+    {
+      "label": "code:powershell (python dnd_transcribe.py -a audio_files/session_1.wav)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L46",
+      "id": "dnd_readme_codeblock_4",
+      "community": 1,
+      "norm_label": "code:powershell (python dnd_transcribe.py -a audio_files/session_1.wav)"
+    },
+    {
+      "label": "\ud83d\udcc4 Output Files Generated",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L54",
+      "id": "dnd_readme_output_files_generated",
+      "community": 1,
+      "norm_label": "\ud83d\udcc4 output files generated"
+    },
+    {
+      "label": "\ud83c\udf93 Step 3: How to Train the Software (Refining Voice Profiles)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L64",
+      "id": "dnd_readme_step_3_how_to_train_the_software_refining_voice_profiles",
+      "community": 3,
+      "norm_label": "\ud83c\udf93 step 3: how to train the software (refining voice profiles)"
+    },
+    {
+      "label": "1. Edit the Transcript",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L68",
+      "id": "dnd_readme_1_edit_the_transcript",
+      "community": 3,
+      "norm_label": "1. edit the transcript"
+    },
+    {
+      "label": "code:markdown (<!-- BEFORE -->)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L70",
+      "id": "dnd_readme_codeblock_5",
+      "community": 3,
+      "norm_label": "code:markdown (<!-- before -->)"
+    },
+    {
+      "label": "2. Run Training (Voice Harvesting)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L78",
+      "id": "dnd_readme_2_run_training_voice_harvesting",
+      "community": 3,
+      "norm_label": "2. run training (voice harvesting)"
+    },
+    {
+      "label": "Option A: Via Main Script (Recommended)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L81",
+      "id": "dnd_readme_option_a_via_main_script_recommended",
+      "community": 3,
+      "norm_label": "option a: via main script (recommended)"
+    },
+    {
+      "label": "code:powershell (python dnd_transcribe.py --train --md \"transcripts/your_edit)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L82",
+      "id": "dnd_readme_codeblock_6",
+      "community": 3,
+      "norm_label": "code:powershell (python dnd_transcribe.py --train --md \"transcripts/your_edit)"
+    },
+    {
+      "label": "Option B: Via Extraction Script (Alternative)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L86",
+      "id": "dnd_readme_option_b_via_extraction_script_alternative",
+      "community": 3,
+      "norm_label": "option b: via extraction script (alternative)"
+    },
+    {
+      "label": "code:powershell (python extract_voices.py \"transcripts/your_edited_transcript)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L87",
+      "id": "dnd_readme_codeblock_7",
+      "community": 3,
+      "norm_label": "code:powershell (python extract_voices.py \"transcripts/your_edited_transcript)"
+    },
+    {
+      "label": "\ud83e\udd16 Local LLM Transcript Refinement & Diff Evaluation",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L96",
+      "id": "dnd_readme_local_llm_transcript_refinement_diff_evaluation",
+      "community": 1,
+      "norm_label": "\ud83e\udd16 local llm transcript refinement & diff evaluation"
+    },
+    {
+      "label": "How It Works",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L100",
+      "id": "dnd_readme_how_it_works",
+      "community": 1,
+      "norm_label": "how it works"
+    },
+    {
+      "label": "Commands & Options",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L105",
+      "id": "dnd_readme_commands_options",
+      "community": 25,
+      "norm_label": "commands & options"
+    },
+    {
+      "label": "code:powershell (python dnd_transcribe.py -a audio_files/session_1.wav)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L107",
+      "id": "dnd_readme_codeblock_8",
+      "community": 25,
+      "norm_label": "code:powershell (python dnd_transcribe.py -a audio_files/session_1.wav)"
+    },
+    {
+      "label": "code:powershell (python dnd_transcribe.py -a audio_files/session_1.wav --no-l)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L111",
+      "id": "dnd_readme_codeblock_9",
+      "community": 25,
+      "norm_label": "code:powershell (python dnd_transcribe.py -a audio_files/session_1.wav --no-l)"
+    },
+    {
+      "label": "code:powershell (python dnd_transcribe.py --refine \"transcripts/my_session_se)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L115",
+      "id": "dnd_readme_codeblock_10",
+      "community": 25,
+      "norm_label": "code:powershell (python dnd_transcribe.py --refine \"transcripts/my_session_se)"
+    },
+    {
+      "label": "code:powershell (python dnd_transcribe.py --diff \"transcripts/session_raw.md\")",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L119",
+      "id": "dnd_readme_codeblock_11",
+      "community": 25,
+      "norm_label": "code:powershell (python dnd_transcribe.py --diff \"transcripts/session_raw.md\")"
+    },
+    {
+      "label": "code:powershell (python dnd_transcribe.py --refine \"transcripts/session_raw.m)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L123",
+      "id": "dnd_readme_codeblock_12",
+      "community": 25,
+      "norm_label": "code:powershell (python dnd_transcribe.py --refine \"transcripts/session_raw.m)"
+    },
+    {
+      "label": "\ud83c\udf99\ufe0f Recommended Audio Preparation (Audacity Workflow)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L129",
+      "id": "dnd_readme_recommended_audio_preparation_audacity_workflow",
+      "community": 1,
+      "norm_label": "\ud83c\udf99\ufe0f recommended audio preparation (audacity workflow)"
+    },
+    {
+      "label": "\ud83d\uddc2\ufe0f Folder Structure",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L144",
+      "id": "dnd_readme_folder_structure",
+      "community": 1,
+      "norm_label": "\ud83d\uddc2\ufe0f folder structure"
+    },
+    {
+      "label": "\u2699\ufe0f Configuration & Prerequisites",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L153",
+      "id": "dnd_readme_configuration_prerequisites",
+      "community": 25,
+      "norm_label": "\u2699\ufe0f configuration & prerequisites"
+    },
+    {
+      "label": "code:env (HF_TOKEN=\"hf_your_token_here\")",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L157",
+      "id": "dnd_readme_codeblock_13",
+      "community": 25,
+      "norm_label": "code:env (hf_token=\"hf_your_token_here\")"
+    },
+    {
+      "label": "code:powershell (python verify_gpu.py)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L162",
+      "id": "dnd_readme_codeblock_14",
+      "community": 25,
+      "norm_label": "code:powershell (python verify_gpu.py)"
+    },
+    {
+      "label": "03_14_session_log.md",
+      "file_type": "document",
+      "source_file": "transcripts/03_14_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_03_14_session_log_md",
+      "community": 11,
+      "norm_label": "03_14_session_log.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/03_14_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_03_14_session_log_d_d_session_transcript",
+      "community": 11,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "2-21_game_session_log.md",
+      "file_type": "document",
+      "source_file": "transcripts/2-21_game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_2_21_game_session_log_md",
+      "community": 12,
+      "norm_label": "2-21_game_session_log.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/2-21_game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_2_21_game_session_log_d_d_session_transcript",
+      "community": 12,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "2.8.2026_session_log.md",
+      "file_type": "document",
+      "source_file": "transcripts/2.8.2026_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_2_8_2026_session_log_md",
+      "community": 13,
+      "norm_label": "2.8.2026_session_log.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/2.8.2026_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_2_8_2026_session_log_d_d_session_transcript",
+      "community": 13,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "APR18-nate-game0_session_log.md",
+      "file_type": "document",
+      "source_file": "transcripts/APR18-nate-game0_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_apr18_nate_game0_session_log_md",
+      "community": 14,
+      "norm_label": "apr18-nate-game0_session_log.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/APR18-nate-game0_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_apr18_nate_game0_session_log_d_d_session_transcript",
+      "community": 14,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "apr18_clean.md",
+      "file_type": "document",
+      "source_file": "transcripts/apr18_clean.md",
+      "source_location": "L1",
+      "id": "transcripts_apr18_clean_md",
+      "community": 24,
+      "norm_label": "apr18_clean.md"
+    },
+    {
+      "label": "apr_11_game_session_log.md",
+      "file_type": "document",
+      "source_file": "transcripts/apr_11_game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_apr_11_game_session_log_md",
+      "community": 15,
+      "norm_label": "apr_11_game_session_log.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/apr_11_game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_apr_11_game_session_log_d_d_session_transcript",
+      "community": 15,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "Apr_25_Shaun_session_log.md",
+      "file_type": "document",
+      "source_file": "transcripts/Apr_25_Shaun_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_apr_25_shaun_session_log_md",
+      "community": 16,
+      "norm_label": "apr_25_shaun_session_log.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/Apr_25_Shaun_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_apr_25_shaun_session_log_d_d_session_transcript",
+      "community": 16,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "bedlam_game_3_session_log.md",
+      "file_type": "document",
+      "source_file": "transcripts/bedlam_game_3_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_bedlam_game_3_session_log_md",
+      "community": 17,
+      "norm_label": "bedlam_game_3_session_log.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/bedlam_game_3_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_bedlam_game_3_session_log_d_d_session_transcript",
+      "community": 17,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "july25_shaun_game_session_log.md",
+      "file_type": "document",
+      "source_file": "transcripts/july25_shaun_game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_july25_shaun_game_session_log_md",
+      "community": 18,
+      "norm_label": "july25_shaun_game_session_log.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/july25_shaun_game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_july25_shaun_game_session_log_d_d_session_transcript",
+      "community": 18,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "July_5_2026_Shaun_Game_session_log.md",
+      "file_type": "document",
+      "source_file": "transcripts/July_5_2026_Shaun_Game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_july_5_2026_shaun_game_session_log_md",
+      "community": 19,
+      "norm_label": "july_5_2026_shaun_game_session_log.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/July_5_2026_Shaun_Game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_july_5_2026_shaun_game_session_log_d_d_session_transcript",
+      "community": 19,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "July_5_2026_Shaun_Game_session_log_ai_diff.md",
+      "file_type": "document",
+      "source_file": "transcripts/July_5_2026_Shaun_Game_session_log_ai_diff.md",
+      "source_location": "L1",
+      "id": "transcripts_july_5_2026_shaun_game_session_log_ai_diff_md",
+      "community": 27,
+      "norm_label": "july_5_2026_shaun_game_session_log_ai_diff.md"
+    },
+    {
+      "label": "AI Refinement Evaluation & Diff Report",
+      "file_type": "document",
+      "source_file": "transcripts/July_5_2026_Shaun_Game_session_log_ai_diff.md",
+      "source_location": "L1",
+      "id": "transcripts_july_5_2026_shaun_game_session_log_ai_diff_ai_refinement_evaluation_diff_report",
+      "community": 27,
+      "norm_label": "ai refinement evaluation & diff report"
+    },
+    {
+      "label": "Summary Metrics",
+      "file_type": "document",
+      "source_file": "transcripts/July_5_2026_Shaun_Game_session_log_ai_diff.md",
+      "source_location": "L6",
+      "id": "transcripts_july_5_2026_shaun_game_session_log_ai_diff_summary_metrics",
+      "community": 27,
+      "norm_label": "summary metrics"
+    },
+    {
+      "label": "Detailed Line-by-Line Changes",
+      "file_type": "document",
+      "source_file": "transcripts/July_5_2026_Shaun_Game_session_log_ai_diff.md",
+      "source_location": "L15",
+      "id": "transcripts_july_5_2026_shaun_game_session_log_ai_diff_detailed_line_by_line_changes",
+      "community": 27,
+      "norm_label": "detailed line-by-line changes"
+    },
+    {
+      "label": "July_5_2026_Shaun_Game_session_log_FIXED.md",
+      "file_type": "document",
+      "source_file": "transcripts/July_5_2026_Shaun_Game_session_log_FIXED.md",
+      "source_location": "L1",
+      "id": "transcripts_july_5_2026_shaun_game_session_log_fixed_md",
+      "community": 20,
+      "norm_label": "july_5_2026_shaun_game_session_log_fixed.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/July_5_2026_Shaun_Game_session_log_FIXED.md",
+      "source_location": "L1",
+      "id": "transcripts_july_5_2026_shaun_game_session_log_fixed_d_d_session_transcript",
+      "community": 20,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "June 20 nate game_session_log.md",
+      "file_type": "document",
+      "source_file": "transcripts/June 20 nate game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_june_20_nate_game_session_log_md",
+      "community": 21,
+      "norm_label": "june 20 nate game_session_log.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/June 20 nate game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_june_20_nate_game_session_log_d_d_session_transcript",
+      "community": 21,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "May-28-game_session_log.md",
+      "file_type": "document",
+      "source_file": "transcripts/May-28-game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_may_28_game_session_log_md",
+      "community": 23,
+      "norm_label": "may-28-game_session_log.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/May-28-game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_may_28_game_session_log_d_d_session_transcript",
+      "community": 23,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "may23-game_session_log.md",
+      "file_type": "document",
+      "source_file": "transcripts/may23-game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_may23_game_session_log_md",
+      "community": 22,
+      "norm_label": "may23-game_session_log.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/may23-game_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_may23_game_session_log_d_d_session_transcript",
+      "community": 22,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L249",
+      "community": 0,
+      "norm_label": "optional post-processing pass using local llm (e.g. gemma / llama via lm studio",
+      "id": "dnd_dnd_transcribe_rationale_249"
+    },
+    {
+      "label": "\ud83e\udd16 Local LLM Transcript Refinement (LM Studio + Gemma 4)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L91",
+      "community": 1,
+      "norm_label": "\ud83e\udd16 local llm transcript refinement (lm studio + gemma 4)",
+      "id": "dnd_readme_local_llm_transcript_refinement_lm_studio_gemma_4"
+    },
+    {
+      "label": "Usage",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L100",
+      "community": 1,
+      "norm_label": "usage",
+      "id": "dnd_readme_usage"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L48",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_windowssleeppreventer"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_tqdmlist"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L87",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_custom_transcribe"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L221",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_log_metric"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L228",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_timer"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L248",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_generate_ai_diff"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L248",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_refine_transcript_with_llm"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L465",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_refine_existing_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L349",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_run_dnd_session"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L627",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_time_str_to_seconds"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L638",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_parse_markdown_for_speakers"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L659",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_train_voices"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L966",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_diff_two_transcripts"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L53",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_windowssleeppreventer",
+      "target": "dnd_dnd_transcribe_windowssleeppreventer_enter"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_windowssleeppreventer",
+      "target": "dnd_dnd_transcribe_windowssleeppreventer_exit"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L49",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_49",
+      "target": "dnd_dnd_transcribe_windowssleeppreventer"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_tqdmlist",
+      "target": "list"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L77",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_tqdmlist",
+      "target": "dnd_dnd_transcribe_tqdmlist_init"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L81",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_tqdmlist",
+      "target": "dnd_dnd_transcribe_tqdmlist_iter"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L422",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_run_dnd_session",
+      "target": "dnd_dnd_transcribe_tqdmlist"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L73",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_73",
+      "target": "dnd_dnd_transcribe_tqdmlist"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L175",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_custom_transcribe",
+      "target": "list"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_tqdmlist_init",
+      "target": "dnd_dnd_transcribe_timer_init"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L99",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_99",
+      "target": "dnd_dnd_transcribe_custom_transcribe"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L237",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_timer_enter",
+      "target": "dnd_dnd_transcribe_log_metric"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L243",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_timer_exit",
+      "target": "dnd_dnd_transcribe_log_metric"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L393",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_run_dnd_session",
+      "target": "dnd_dnd_transcribe_log_metric"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L229",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_timer",
+      "target": "dnd_dnd_transcribe_timer_init"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L235",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_timer",
+      "target": "dnd_dnd_transcribe_timer_enter"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L240",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_timer",
+      "target": "dnd_dnd_transcribe_timer_exit"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L245",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_timer",
+      "target": "dnd_dnd_transcribe_timer_format_duration"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L350",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_run_dnd_session",
+      "target": "dnd_dnd_transcribe_timer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L351",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_run_dnd_session",
+      "target": "dnd_dnd_transcribe_timer_enter"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L243",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_timer_exit",
+      "target": "dnd_dnd_transcribe_timer_format_duration"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L609",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_run_dnd_session",
+      "target": "dnd_dnd_transcribe_timer_exit"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L614",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_run_dnd_session",
+      "target": "dnd_dnd_transcribe_timer_format_duration"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L525",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_refine_existing_transcript",
+      "target": "dnd_dnd_transcribe_generate_ai_diff"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L829",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_run_dnd_session",
+      "target": "dnd_dnd_transcribe_generate_ai_diff"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L992",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_diff_two_transcripts",
+      "target": "dnd_dnd_transcribe_generate_ai_diff"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L256",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_256",
+      "target": "dnd_dnd_transcribe_generate_ai_diff"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L507",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_refine_existing_transcript",
+      "target": "dnd_dnd_transcribe_refine_transcript_with_llm"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L595",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_run_dnd_session",
+      "target": "dnd_dnd_transcribe_refine_transcript_with_llm"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L353",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_353",
+      "target": "dnd_dnd_transcribe_refine_transcript_with_llm"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L249",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_249",
+      "target": "dnd_dnd_transcribe_refine_transcript_with_llm"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L470",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_470",
+      "target": "dnd_dnd_transcribe_refine_existing_transcript"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L648",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_parse_markdown_for_speakers",
+      "target": "dnd_dnd_transcribe_time_str_to_seconds"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L665",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_train_voices",
+      "target": "dnd_dnd_transcribe_parse_markdown_for_speakers"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L967",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_967",
+      "target": "dnd_dnd_transcribe_diff_two_transcripts"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "extract_voices.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "extract_voices_py",
+      "target": "dnd_extract_voices_time_str_to_seconds"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "extract_voices.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "extract_voices_py",
+      "target": "dnd_extract_voices_parse_markdown_for_speakers"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "extract_voices.py",
+      "source_location": "L56",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "extract_voices_py",
+      "target": "dnd_extract_voices_main"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "extract_voices.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_extract_voices_parse_markdown_for_speakers",
+      "target": "dnd_extract_voices_time_str_to_seconds"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "extract_voices.py",
+      "source_location": "L76",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_extract_voices_main",
+      "target": "dnd_extract_voices_parse_markdown_for_speakers"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "extract_voices.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_extract_voices_rationale_28",
+      "target": "dnd_extract_voices_parse_markdown_for_speakers"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "test_embed.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "test_embed_py",
+      "target": "dnd_test_embed_test"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "verify_gpu.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "verify_gpu_py",
+      "target": "dnd_verify_gpu_verify"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "agents_md",
+      "target": "dnd_agents_gitnexus_code_intelligence"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_agents_gitnexus_code_intelligence",
+      "target": "dnd_agents_always_do"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_agents_gitnexus_code_intelligence",
+      "target": "dnd_agents_never_do"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_agents_gitnexus_code_intelligence",
+      "target": "dnd_agents_resources"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L33",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_agents_gitnexus_code_intelligence",
+      "target": "dnd_agents_cli"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "changelog_md",
+      "target": "dnd_changelog_changelog",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "dnd_changelog_changelog",
+      "target": "dnd_changelog_1_1_0_2026_08_16",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "dnd_changelog_1_1_0_2026_08_16",
+      "target": "dnd_changelog_added",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "dnd_changelog_1_1_0_2026_08_16",
+      "target": "dnd_changelog_changed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "dnd_changelog_1_1_0_2026_08_16",
+      "target": "dnd_changelog_fixed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CLAUDE.md",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "claude_md",
+      "target": "dnd_claude_gitnexus_code_intelligence"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CLAUDE.md",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_claude_gitnexus_code_intelligence",
+      "target": "dnd_claude_always_do"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CLAUDE.md",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_claude_gitnexus_code_intelligence",
+      "target": "dnd_claude_never_do"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CLAUDE.md",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_claude_gitnexus_code_intelligence",
+      "target": "dnd_claude_resources"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CLAUDE.md",
+      "source_location": "L33",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_claude_gitnexus_code_intelligence",
+      "target": "dnd_claude_cli"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "readme_md",
+      "target": "dnd_readme_d_d_session_transcriber_voice_harvester"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_d_d_session_transcriber_voice_harvester",
+      "target": "dnd_readme_step_1_open_the_virtual_environment_venv"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_d_d_session_transcriber_voice_harvester",
+      "target": "dnd_readme_step_2_how_to_run_the_software_transcription"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L59",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_d_d_session_transcriber_voice_harvester",
+      "target": "dnd_readme_step_3_how_to_train_the_software_refining_voice_profiles"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L96",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_d_d_session_transcriber_voice_harvester",
+      "target": "dnd_readme_local_llm_transcript_refinement_diff_evaluation"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L106",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_d_d_session_transcriber_voice_harvester",
+      "target": "dnd_readme_recommended_audio_preparation_audacity_workflow"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L121",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_d_d_session_transcriber_voice_harvester",
+      "target": "dnd_readme_folder_structure"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L130",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_d_d_session_transcriber_voice_harvester",
+      "target": "dnd_readme_configuration_prerequisites"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L91",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_d_d_session_transcriber_voice_harvester",
+      "target": "dnd_readme_local_llm_transcript_refinement_lm_studio_gemma_4"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_step_1_open_the_virtual_environment_venv",
+      "target": "dnd_readme_for_powershell_recommended_on_windows"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L26",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_step_1_open_the_virtual_environment_venv",
+      "target": "dnd_readme_for_command_prompt_cmd"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L31",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_step_1_open_the_virtual_environment_venv",
+      "target": "dnd_readme_for_git_bash_wsl"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_for_powershell_recommended_on_windows",
+      "target": "dnd_readme_codeblock_1"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L27",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_for_command_prompt_cmd",
+      "target": "dnd_readme_codeblock_2"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_for_git_bash_wsl",
+      "target": "dnd_readme_codeblock_3"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L46",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_step_2_how_to_run_the_software_transcription",
+      "target": "dnd_readme_codeblock_4"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L54",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_step_2_how_to_run_the_software_transcription",
+      "target": "dnd_readme_output_files_generated"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L63",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_step_3_how_to_train_the_software_refining_voice_profiles",
+      "target": "dnd_readme_1_edit_the_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L73",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_step_3_how_to_train_the_software_refining_voice_profiles",
+      "target": "dnd_readme_2_run_training_voice_harvesting"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L65",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_1_edit_the_transcript",
+      "target": "dnd_readme_codeblock_5"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L76",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_2_run_training_voice_harvesting",
+      "target": "dnd_readme_option_a_via_main_script_recommended"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L81",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_2_run_training_voice_harvesting",
+      "target": "dnd_readme_option_b_via_extraction_script_alternative"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L77",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_option_a_via_main_script_recommended",
+      "target": "dnd_readme_codeblock_6"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L82",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_option_b_via_extraction_script_alternative",
+      "target": "dnd_readme_codeblock_7"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L100",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_local_llm_transcript_refinement_diff_evaluation",
+      "target": "dnd_readme_how_it_works"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L105",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_local_llm_transcript_refinement_diff_evaluation",
+      "target": "dnd_readme_commands_options"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L95",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_local_llm_transcript_refinement_lm_studio_gemma_4",
+      "target": "dnd_readme_how_it_works"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L107",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_commands_options",
+      "target": "dnd_readme_codeblock_8"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L111",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_commands_options",
+      "target": "dnd_readme_codeblock_9"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L115",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_commands_options",
+      "target": "dnd_readme_codeblock_10"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L119",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_commands_options",
+      "target": "dnd_readme_codeblock_11"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L123",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_commands_options",
+      "target": "dnd_readme_codeblock_12"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L134",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_configuration_prerequisites",
+      "target": "dnd_readme_codeblock_8"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L139",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_configuration_prerequisites",
+      "target": "dnd_readme_codeblock_9"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L157",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_configuration_prerequisites",
+      "target": "dnd_readme_codeblock_13"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L162",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_configuration_prerequisites",
+      "target": "dnd_readme_codeblock_14"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/03_14_session_log.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_03_14_session_log_md",
+      "target": "transcripts_03_14_session_log_d_d_session_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/2-21_game_session_log.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_2_21_game_session_log_md",
+      "target": "transcripts_2_21_game_session_log_d_d_session_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/2.8.2026_session_log.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_2_8_2026_session_log_md",
+      "target": "transcripts_2_8_2026_session_log_d_d_session_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/APR18-nate-game0_session_log.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_apr18_nate_game0_session_log_md",
+      "target": "transcripts_apr18_nate_game0_session_log_d_d_session_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/apr_11_game_session_log.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_apr_11_game_session_log_md",
+      "target": "transcripts_apr_11_game_session_log_d_d_session_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/Apr_25_Shaun_session_log.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_apr_25_shaun_session_log_md",
+      "target": "transcripts_apr_25_shaun_session_log_d_d_session_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/bedlam_game_3_session_log.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_bedlam_game_3_session_log_md",
+      "target": "transcripts_bedlam_game_3_session_log_d_d_session_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/july25_shaun_game_session_log.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_july25_shaun_game_session_log_md",
+      "target": "transcripts_july25_shaun_game_session_log_d_d_session_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/July_5_2026_Shaun_Game_session_log.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_july_5_2026_shaun_game_session_log_md",
+      "target": "transcripts_july_5_2026_shaun_game_session_log_d_d_session_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/July_5_2026_Shaun_Game_session_log_ai_diff.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_july_5_2026_shaun_game_session_log_ai_diff_md",
+      "target": "transcripts_july_5_2026_shaun_game_session_log_ai_diff_ai_refinement_evaluation_diff_report"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/July_5_2026_Shaun_Game_session_log_ai_diff.md",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_july_5_2026_shaun_game_session_log_ai_diff_ai_refinement_evaluation_diff_report",
+      "target": "transcripts_july_5_2026_shaun_game_session_log_ai_diff_summary_metrics"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/July_5_2026_Shaun_Game_session_log_ai_diff.md",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_july_5_2026_shaun_game_session_log_ai_diff_ai_refinement_evaluation_diff_report",
+      "target": "transcripts_july_5_2026_shaun_game_session_log_ai_diff_detailed_line_by_line_changes"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/July_5_2026_Shaun_Game_session_log_FIXED.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_july_5_2026_shaun_game_session_log_fixed_md",
+      "target": "transcripts_july_5_2026_shaun_game_session_log_fixed_d_d_session_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/June 20 nate game_session_log.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_june_20_nate_game_session_log_md",
+      "target": "transcripts_june_20_nate_game_session_log_d_d_session_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/May-28-game_session_log.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_may_28_game_session_log_md",
+      "target": "transcripts_may_28_game_session_log_d_d_session_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/may23-game_session_log.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transcripts_may23_game_session_log_md",
+      "target": "transcripts_may23_game_session_log_d_d_session_transcript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L100",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_readme_local_llm_transcript_refinement_lm_studio_gemma_4",
+      "target": "dnd_readme_usage"
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "3611eab029bf68e4cffe93d7fcea8022f4336b95"
+}

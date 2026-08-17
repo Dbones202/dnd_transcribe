@@ -245,12 +245,126 @@ class Timer:
     def format_duration(self):
         return str(datetime.timedelta(seconds=int(self.duration)))
 
-def refine_transcript_with_llm(formatted_lines: List[str], api_url: str = "http://localhost:1234/v1") -> List[str]:
+def generate_ai_diff(
+    raw_lines: List[str],
+    refined_lines: List[str],
+    diff_output_path: str,
+    session_name: str,
+    duration_str: str = "",
+    batch_stats: dict = None
+) -> dict:
+    """
+    Compares raw and refined transcript lines, computes change metrics,
+    and writes a Markdown diff/evaluation report.
+    """
+    import re
+    
+    total_lines = max(len(raw_lines), len(refined_lines))
+    modified_lines = []
+    
+    pattern = re.compile(r'^(\[\d{1,2}:\d{2}:\d{2} - \d{1,2}:\d{2}:\d{2}\])\s*\*\*(.+?)\*\*:\s*(.*)$')
+    
+    for idx in range(min(len(raw_lines), len(refined_lines))):
+        raw = raw_lines[idx].strip()
+        ref = refined_lines[idx].strip()
+        
+        if raw != ref:
+            raw_match = pattern.match(raw)
+            ref_match = pattern.match(ref)
+            
+            raw_spk = raw_match.group(2) if raw_match else "Unknown"
+            ref_spk = ref_match.group(2) if ref_match else "Unknown"
+            raw_text = raw_match.group(3) if raw_match else raw
+            ref_text = ref_match.group(3) if ref_match else ref
+            ts = raw_match.group(1) if raw_match else (ref_match.group(1) if ref_match else f"Line {idx+1}")
+            
+            # If speaker names differ, include speaker in the change cell
+            if raw_spk != ref_spk:
+                before_cell = f"**{raw_spk}**: {raw_text}"
+                after_cell = f"**{ref_spk}**: {ref_text}"
+                spk_header = f"{raw_spk} -> {ref_spk}"
+            else:
+                before_cell = raw_text
+                after_cell = ref_text
+                spk_header = raw_spk
+            
+            modified_lines.append({
+                "line_num": idx + 1,
+                "timestamp": ts,
+                "speaker_info": spk_header,
+                "before": before_cell,
+                "after": after_cell
+            })
+            
+    # Check for line count differences
+    if len(raw_lines) != len(refined_lines):
+        diff_len = abs(len(raw_lines) - len(refined_lines))
+        note = f"⚠️ Line count mismatch: Raw has {len(raw_lines)} lines, Refined has {len(refined_lines)} lines ({diff_len} line delta)."
+    else:
+        note = "✅ Line counts match identically (100% line alignment preserved)."
+
+    num_modified = len(modified_lines)
+    pct_modified = (num_modified / total_lines * 100) if total_lines > 0 else 0.0
+    
+    os.makedirs(os.path.dirname(os.path.abspath(diff_output_path)), exist_ok=True)
+    with open(diff_output_path, "w", encoding="utf-8") as f:
+        f.write(f"# AI Refinement Evaluation & Diff Report\n\n")
+        f.write(f"> **Session**: `{session_name}`  \n")
+        f.write(f"> **Date**: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  \n")
+        if duration_str:
+            f.write(f"> **AI Processing Duration**: {duration_str}  \n")
+        f.write(f"\n## Summary Metrics\n\n")
+        f.write(f"| Metric | Value |\n")
+        f.write(f"| :--- | :--- |\n")
+        f.write(f"| **Total Dialogue Lines** | {total_lines} |\n")
+        f.write(f"| **Lines Modified by AI** | {num_modified} ({pct_modified:.1f}%) |\n")
+        f.write(f"| **Lines Unchanged** | {total_lines - num_modified} ({(100 - pct_modified):.1f}%) |\n")
+        if batch_stats:
+            f.write(f"| **Batches Completed** | {batch_stats.get('completed', 0)} / {batch_stats.get('total', 0)} |\n")
+            f.write(f"| **Mismatched / Discarded Batches** | {batch_stats.get('failed', 0)} |\n")
+        f.write(f"| **Integrity Check** | {note} |\n\n")
+        
+        f.write(f"## Detailed Line-by-Line Changes\n\n")
+        if modified_lines:
+            f.write(f"| Line # | Time & Speaker | Before AI (Raw) | After AI (Refined) |\n")
+            f.write(f"| :--- | :--- | :--- | :--- |\n")
+            for item in modified_lines:
+                raw_clean = item['before'].replace('|', '\\|')
+                ref_clean = item['after'].replace('|', '\\|')
+                f.write(f"| {item['line_num']} | {item['timestamp']} **{item['speaker_info']}** | {raw_clean} | {ref_clean} |\n")
+        else:
+            f.write(f"_No lines were altered by the AI._\n")
+
+    print(f"\n[AI Evaluation] Diff report written to: {diff_output_path}")
+    print(f"  -> Modified {num_modified}/{total_lines} lines ({pct_modified:.1f}%)")
+    
+    return {
+        "total_lines": total_lines,
+        "num_modified": num_modified,
+        "pct_modified": pct_modified,
+        "modified_lines": modified_lines
+    }
+
+def refine_transcript_with_llm(
+    formatted_lines: List[str], 
+    api_url: str = None,
+    batch_size: int = 50
+) -> tuple[List[str], dict]:
     """
     Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio REST API)
     to refine D&D terms, homophones, punctuation, and stutter artifacts without altering verbatim meaning or line structure.
+    Returns (refined_lines, batch_stats).
     """
+    if not api_url:
+        api_url = os.getenv("LLM_API_URL", "http://localhost:1234/v1")
+        
     endpoint = f"{api_url.rstrip('/')}/chat/completions"
+    
+    stats = {
+        "total": (len(formatted_lines) + batch_size - 1) // batch_size if formatted_lines else 0,
+        "completed": 0,
+        "failed": 0
+    }
     
     # 1. Health check to test if LM Studio server is online AND a model is loaded
     try:
@@ -259,7 +373,7 @@ def refine_transcript_with_llm(formatted_lines: List[str], api_url: str = "http:
             if resp.status != 200:
                 print(f"\n[LM Studio WARNING] Server reachable at {api_url} but returned status {resp.status}.")
                 print("  -> Please verify LM Studio server status. Skipping LLM refinement.\n")
-                return formatted_lines
+                return formatted_lines, stats
             
             res_body = json.loads(resp.read().decode("utf-8"))
             models_data = res_body.get("data", [])
@@ -267,7 +381,7 @@ def refine_transcript_with_llm(formatted_lines: List[str], api_url: str = "http:
                 print(f"\n[LM Studio WARNING] Local LLM server detected at {api_url}, but NO MODEL IS LOADED!")
                 print("  -> Please load a model (e.g. Gemma, Llama 3) inside LM Studio.")
                 print("  -> Skipping LLM refinement for this session.\n")
-                return formatted_lines
+                return formatted_lines, stats
             
             loaded_model_id = models_data[0].get("id", "Unknown Model")
             print(f"\n[LM Studio] Connected to local server. Loaded model: '{loaded_model_id}'")
@@ -276,10 +390,10 @@ def refine_transcript_with_llm(formatted_lines: List[str], api_url: str = "http:
         print(f"\n[LM Studio WARNING] Local LLM server not detected at {api_url}.")
         print("  -> Please start the LM Studio server (Developer -> Local Server) and load a model.")
         print("  -> Skipping LLM refinement for this session.\n")
-        return formatted_lines
+        return formatted_lines, stats
 
     print("\n--- Refining Transcript with Local LLM (LM Studio) ---")
-    print("[NOTICE] Processing LLM batches... responses can take 1-3 minutes per batch depending on model & hardware.")
+    print(f"[NOTICE] Processing {stats['total']} batches (Batch size: {batch_size} lines)...")
     print("[NOTICE] Batch HTTP timeout is set to 300s (5 minutes).\n")
     
     system_prompt = (
@@ -293,9 +407,8 @@ def refine_transcript_with_llm(formatted_lines: List[str], api_url: str = "http:
         "Output ONLY the corrected transcript lines."
     )
 
-    batch_size = 25
     refined_lines = []
-    total_batches = (len(formatted_lines) + batch_size - 1) // batch_size
+    total_batches = stats['total']
     
     for i in range(0, len(formatted_lines), batch_size):
         batch_num = i // batch_size + 1
@@ -321,7 +434,6 @@ def refine_transcript_with_llm(formatted_lines: List[str], api_url: str = "http:
                 headers={"Content-Type": "application/json"},
                 method="POST"
             )
-            # Set timeout to 300.0s (5 minutes) for long generation times
             with urllib.request.urlopen(req, timeout=300.0) as resp:
                 res_body = json.loads(resp.read().decode("utf-8"))
                 output_text = res_body["choices"][0]["message"]["content"].strip()
@@ -329,24 +441,97 @@ def refine_transcript_with_llm(formatted_lines: List[str], api_url: str = "http:
                 output_lines = [l for l in output_text.splitlines() if l.strip()]
                 if len(output_lines) == len(chunk):
                     refined_lines.extend(output_lines)
+                    stats['completed'] += 1
                     print(f"     Batch {batch_num}/{total_batches} completed successfully.")
                 else:
                     print(f"  [LLM Warning] Line count mismatch in batch {batch_num} (expected {len(chunk)}, got {len(output_lines)}). Keeping raw chunk.")
                     refined_lines.extend(chunk)
+                    stats['failed'] += 1
         except urllib.error.HTTPError as e:
             if e.code == 400:
                 print(f"  [LLM Error] Batch {batch_num} failed (HTTP 400 Bad Request): Ensure a model is loaded in LM Studio. Keeping raw chunk.")
             else:
                 print(f"  [LLM Error] Batch {batch_num} failed with HTTP {e.code}: {e.reason}. Keeping raw chunk.")
             refined_lines.extend(chunk)
+            stats['failed'] += 1
         except Exception as e:
             print(f"  [LLM Error] Failed to refine batch {batch_num}: {e}. Keeping raw chunk.")
             refined_lines.extend(chunk)
+            stats['failed'] += 1
             
-    print("[LM Studio] LLM refinement complete.")
-    return refined_lines
+    print(f"[LM Studio] LLM refinement complete ({stats['completed']}/{total_batches} successful batches).")
+    return refined_lines, stats
 
-def run_dnd_session(audio_path=None, skip_llm=False):
+def refine_existing_transcript(
+    md_path: str, 
+    api_url: str = None, 
+    batch_size: int = 50
+):
+    """
+    Standalone function to refine an existing raw markdown transcript file,
+    produce a refined version, and generate a diff/evaluation report.
+    """
+    import re
+    if not os.path.exists(md_path):
+        print(f"Error: Transcript file '{md_path}' not found.")
+        return
+        
+    print(f"\n--- Loading Transcript: {md_path} ---")
+    headers = []
+    dialogue_lines = []
+    pattern = re.compile(r'^\[\d{1,2}:\d{2}:\d{2} - \d{1,2}:\d{2}:\d{2}\]')
+    
+    with open(md_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            stripped = line.rstrip()
+            if pattern.search(stripped):
+                dialogue_lines.append(stripped)
+            elif not dialogue_lines:
+                headers.append(stripped)
+                
+    if not dialogue_lines:
+        print("Error: No timestamped dialogue lines found in the file.")
+        return
+        
+    print(f"Found {len(dialogue_lines)} dialogue lines to refine.")
+    
+    base_name = os.path.splitext(os.path.basename(md_path))[0]
+    # Strip existing _raw or _session_log suffixes for clean naming
+    clean_base = base_name.replace("_session_log_raw", "").replace("_session_log_refined", "").replace("_raw", "")
+    
+    out_dir = os.path.dirname(os.path.abspath(md_path))
+    refined_path = os.path.join(out_dir, f"{clean_base}_session_log_refined.md")
+    diff_path = os.path.join(out_dir, f"{clean_base}_ai_diff.md")
+    
+    start_time = time.time()
+    refined_lines, stats = refine_transcript_with_llm(dialogue_lines, api_url=api_url, batch_size=batch_size)
+    duration_str = str(datetime.timedelta(seconds=int(time.time() - start_time)))
+    
+    # Save refined transcript
+    with open(refined_path, 'w', encoding='utf-8') as f:
+        if headers:
+            for h in headers:
+                f.write(f"{h}\n")
+            f.write("\n")
+        else:
+            f.write(f"# D&D Session Transcript (Refined)\n\n")
+            f.write(f"> Refined on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n")
+        for line in refined_lines:
+            f.write(f"{line}  \n")
+            
+    print(f"Refined transcript saved to: {refined_path}")
+    
+    # Generate Diff Report
+    generate_ai_diff(
+        raw_lines=dialogue_lines,
+        refined_lines=refined_lines,
+        diff_output_path=diff_path,
+        session_name=clean_base,
+        duration_str=duration_str,
+        batch_stats=stats
+    )
+
+def run_dnd_session(audio_path=None, skip_llm=False, batch_size=50):
     overall_timer = Timer("Total Session")
     overall_timer.__enter__() # Manually start total timer
 
@@ -439,6 +624,7 @@ def run_dnd_session(audio_path=None, skip_llm=False):
     torch.cuda.empty_cache()
     
     # 3. Final Merge & Voice Identification
+    llm_duration_str = "N/A"
     with Timer("Merge & Save") as t_merge:
         final_result = whisperx.assign_word_speakers(diarize_segments, result)
         
@@ -581,31 +767,78 @@ def run_dnd_session(audio_path=None, skip_llm=False):
         if temp_file_path and process_file_path == temp_file_path:
             orig_name = os.path.basename(file_path)
             
-        output_filename = os.path.join("transcripts", os.path.splitext(orig_name)[0] + "_session_log.md")
-        os.makedirs(os.path.dirname(output_filename), exist_ok=True)
+        clean_stem = os.path.splitext(orig_name)[0]
+        os.makedirs("transcripts", exist_ok=True)
         
-        formatted_lines = []
+        raw_output_filename = os.path.join("transcripts", f"{clean_stem}_session_log_raw.md")
+        standard_output_filename = os.path.join("transcripts", f"{clean_stem}_session_log.md")
+        refined_output_filename = os.path.join("transcripts", f"{clean_stem}_session_log_refined.md")
+        diff_output_filename = os.path.join("transcripts", f"{clean_stem}_ai_diff.md")
+        
+        raw_lines = []
         for segment in final_result["segments"]:
             speaker_id = segment.get("speaker", "UNKNOWN")
             st_str = str(datetime.timedelta(seconds=int(segment['start'])))
             et_str = str(datetime.timedelta(seconds=int(segment['end'])))
-            formatted_lines.append(f"[{st_str} - {et_str}] **{speaker_id}**: {segment['text'].strip()}")
+            raw_lines.append(f"[{st_str} - {et_str}] **{speaker_id}**: {segment['text'].strip()}")
 
-        if not skip_llm:
-            formatted_lines = refine_transcript_with_llm(formatted_lines)
-            
-        with open(output_filename, "w", encoding="utf-8") as f:
+        # 1. ALWAYS write raw transcript immediately
+        with open(raw_output_filename, "w", encoding="utf-8") as f:
+            f.write(f"# D&D Session Transcript (Raw)\n\n")
+            f.write(f"> Processed on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
+            f.write(f"> Audio Duration: {str(datetime.timedelta(seconds=int(audio_duration)))}\n\n")
+            for line in raw_lines:
+                f.write(f"{line}  \n")
+                
+        print(f"\n[Output] Raw transcript saved to: {raw_output_filename}")
+        
+        # Also write the default session_log.md with raw content initially
+        with open(standard_output_filename, "w", encoding="utf-8") as f:
             f.write(f"# D&D Session Transcript\n\n")
             f.write(f"> Processed on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
             f.write(f"> Audio Duration: {str(datetime.timedelta(seconds=int(audio_duration)))}\n\n")
-            for line in formatted_lines:
+            for line in raw_lines:
                 f.write(f"{line}  \n")
+
+        # 2. Optional LLM Refinement Pass
+        if not skip_llm:
+            llm_start_time = time.time()
+            refined_lines, stats = refine_transcript_with_llm(raw_lines, batch_size=batch_size)
+            llm_duration_str = str(datetime.timedelta(seconds=int(time.time() - llm_start_time)))
+            log_metric(f"LLM Refinement finished in {llm_duration_str}")
+            
+            # Write refined file
+            with open(refined_output_filename, "w", encoding="utf-8") as f:
+                f.write(f"# D&D Session Transcript (Refined)\n\n")
+                f.write(f"> Processed on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
+                f.write(f"> Audio Duration: {str(datetime.timedelta(seconds=int(audio_duration)))}\n")
+                f.write(f"> Refined with Local LLM in {llm_duration_str}\n\n")
+                for line in refined_lines:
+                    f.write(f"{line}  \n")
+            print(f"[Output] Refined transcript saved to: {refined_output_filename}")
+            
+            # Update main session_log.md to the refined content
+            with open(standard_output_filename, "w", encoding="utf-8") as f:
+                f.write(f"# D&D Session Transcript\n\n")
+                f.write(f"> Processed on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
+                f.write(f"> Audio Duration: {str(datetime.timedelta(seconds=int(audio_duration)))}\n\n")
+                for line in refined_lines:
+                    f.write(f"{line}  \n")
+                    
+            # 3. Generate AI Diff & Evaluation Report
+            generate_ai_diff(
+                raw_lines=raw_lines,
+                refined_lines=refined_lines,
+                diff_output_path=diff_output_filename,
+                session_name=clean_stem,
+                duration_str=llm_duration_str,
+                batch_stats=stats
+            )
 
     # 4. Cleanup
     if temp_file_path and os.path.exists(temp_file_path):
         os.remove(temp_file_path)
         log_metric("Temporary normalized audio file removed.")
-
     overall_timer.__exit__(None, None, None)
 
     print("\n" + "="*50)
@@ -614,12 +847,18 @@ def run_dnd_session(audio_path=None, skip_llm=False):
     print(f"{'Transcription':<25} | {t_transcribe.format_duration():<15}")
     print(f"{'Alignment':<25} | {t_align.format_duration():<15}")
     print(f"{'Diarization':<25} | {t_diarize.format_duration():<15}")
+    print(f"{'LLM Refinement':<25} | {llm_duration_str:<15}")
     print(f"{'Merge & Save':<25} | {t_merge.format_duration():<15}")
     print("-" * 50)
     print(f"{'Total Runtime':<25} | {overall_timer.format_duration():<15}")
     print("="*50 + "\n")
 
-    print(f"\nSuccess! Transcript saved to: {output_filename}")
+    print(f"\n[Success] Transcripts and logs generated:")
+    print(f"  -> Raw Transcript:     {raw_output_filename}")
+    if not skip_llm:
+        print(f"  -> Refined Transcript: {refined_output_filename}")
+        print(f"  -> AI Diff Report:     {diff_output_filename}")
+    print(f"  -> Active Session Log: {standard_output_filename}")
 
 
 # --- VOICE HARVESTING (LIBRARY CREATION) ---
@@ -638,7 +877,7 @@ def time_str_to_seconds(time_str):
 def parse_markdown_for_speakers(md_path):
     import re
     speaker_segments = {}
-    pattern = re.compile(r'^\[(\d{1,2}:\d{2}:\d{2}) - (\d{1,2}:\d{2}:\d{2})\] \*\*(.+?)\*\*:')
+    pattern = re.compile(r'^\[(\d{1,2}:\d{2}:\d{2} - \d{1,2}:\d{2}:\d{2})\] \*\*(.+?)\*\*:')
     
     with open(md_path, 'r', encoding='utf-8') as f:
         for line in f:
@@ -725,25 +964,65 @@ def train_voices(md_path, audio_path):
             print(f"  -> Failed to harvest audio for {speaker}")
 
 
+def diff_two_transcripts(raw_md_path: str, refined_md_path: str, output_diff_path: str = None):
+    """Utility to compare any two transcript markdown files and output an AI diff report."""
+    import re
+    if not os.path.exists(raw_md_path) or not os.path.exists(refined_md_path):
+        print(f"Error: One or both files not found: '{raw_md_path}', '{refined_md_path}'")
+        return
+        
+    pattern = re.compile(r'^\[\d{1,2}:\d{2}:\d{2} - \d{1,2}:\d{2}:\d{2}\]')
+    
+    def read_lines(path):
+        lines = []
+        with open(path, 'r', encoding='utf-8') as f:
+            for l in f:
+                s = l.rstrip()
+                if pattern.search(s):
+                    lines.append(s)
+        return lines
+        
+    raw_lines = read_lines(raw_md_path)
+    refined_lines = read_lines(refined_md_path)
+    
+    if not output_diff_path:
+        base = os.path.splitext(raw_md_path)[0].replace("_session_log_raw", "").replace("_raw", "")
+        output_diff_path = f"{base}_ai_diff.md"
+        
+    session_name = os.path.splitext(os.path.basename(raw_md_path))[0]
+    generate_ai_diff(raw_lines, refined_lines, output_diff_path, session_name=session_name)
+
+
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="D&D Transcription and Voice Training")
-    parser.add_argument("--train", action="store_true", help="Harvest voices from an annotated markdown transcript to build the voice_library.")
-    parser.add_argument("--md", type=str, help="Path to the edited markdown (.md) file (for --train)")
+    parser = argparse.ArgumentParser(description="D&D Transcription, AI Refinement & Voice Training")
     parser.add_argument("-a", "--audio", type=str, help="Path to the audio recording file (supports tab completion).")
     parser.add_argument("-i", "--input", type=str, help="Alias for --audio / -a.")
     
+    # Standalone AI Refinement & Diff Options
+    parser.add_argument("--refine", type=str, help="Run AI refinement and generate a diff on an existing markdown transcript.")
+    parser.add_argument("--diff", nargs=2, metavar=('RAW_MD', 'REFINED_MD'), help="Compare two markdown transcripts and generate an AI diff report.")
+    parser.add_argument("--batch-size", type=int, default=50, help="Batch size (number of dialogue lines) per LLM request (default: 50).")
+    parser.add_argument("--api-url", type=str, default=None, help="LLM API URL (default: http://localhost:1234/v1 or LLM_API_URL env var).")
     parser.add_argument("--no-llm", action="store_true", help="Skip local LLM (LM Studio) transcript refinement.")
+    
+    # Voice Harvesting / Training
+    parser.add_argument("--train", action="store_true", help="Harvest voices from an annotated markdown transcript to build the voice_library.")
+    parser.add_argument("--md", type=str, help="Path to the edited markdown (.md) file (for --train)")
     
     args = parser.parse_args()
     
     selected_audio = args.audio or args.input
 
     with WindowsSleepPreventer():
-        if args.train:
+        if args.diff:
+            diff_two_transcripts(args.diff[0], args.diff[1])
+        elif args.refine:
+            refine_existing_transcript(args.refine, api_url=args.api_url, batch_size=args.batch_size)
+        elif args.train:
             if not args.md or not selected_audio:
                 print("Error: --train requires both --md and --audio/-a arguments.")
             else:
                 train_voices(args.md, selected_audio)
         else:
-            run_dnd_session(audio_path=selected_audio, skip_llm=args.no_llm)
+            run_dnd_session(audio_path=selected_audio, skip_llm=args.no_llm, batch_size=args.batch_size)

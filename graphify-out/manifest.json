@@ -1,0 +1,102 @@
+{
+  "E:\\GIT\\DnD\\dnd_transcribe.py": {
+    "mtime": 1786925638.3884995,
+    "hash": "ffc4eda45fb4bbf66c6070b0e4cb42c3"
+  },
+  "E:\\GIT\\DnD\\extract_voices.py": {
+    "mtime": 1771831075.783751,
+    "hash": "2c234553f0ce7ad1bbcf105634fff03d"
+  },
+  "E:\\GIT\\DnD\\test_embed.py": {
+    "mtime": 1771831025.6762908,
+    "hash": "cc620ac03b804b4121d185ce025fd61a"
+  },
+  "E:\\GIT\\DnD\\verify_gpu.py": {
+    "mtime": 1771820233.2272632,
+    "hash": "7164ff99b7b580653ec18183206e6a4d"
+  },
+  "E:\\GIT\\DnD\\AGENTS.md": {
+    "mtime": 1786925163.656448,
+    "hash": "2720b4fe2732240d24ad44e1185dfefc"
+  },
+  "E:\\GIT\\DnD\\CHANGELOG.md": {
+    "mtime": 1786925738.3095725,
+    "hash": "f842e7e0930cb45d8f6c65e4edd53954"
+  },
+  "E:\\GIT\\DnD\\CLAUDE.md": {
+    "mtime": 1786925163.6584418,
+    "hash": "2720b4fe2732240d24ad44e1185dfefc"
+  },
+  "E:\\GIT\\DnD\\diarize_sig.txt": {
+    "mtime": 1771824855.2440524,
+    "hash": "3983bc8d2cc48813173875a543fa877e"
+  },
+  "E:\\GIT\\DnD\\README.md": {
+    "mtime": 1786925648.489871,
+    "hash": "204c3587ab2f5720c4fb369ef2ab0ccd"
+  },
+  "E:\\GIT\\DnD\\transcripts\\03_14_session_log.md": {
+    "mtime": 1773626888.2526333,
+    "hash": "b9fae10ba11edd962b47fd396a52d8d1"
+  },
+  "E:\\GIT\\DnD\\transcripts\\2-21_game_session_log.md": {
+    "mtime": 1771827875.3271995,
+    "hash": "09c59a77f8f7385ba60f6116f0529c6b"
+  },
+  "E:\\GIT\\DnD\\transcripts\\2.8.2026_session_log.md": {
+    "mtime": 1771818978.2225976,
+    "hash": "7b7e5b1ee3e5b2f11bfef871d54ca39f"
+  },
+  "E:\\GIT\\DnD\\transcripts\\APR18-nate-game0_session_log.md": {
+    "mtime": 1776542693.337432,
+    "hash": "9d08b16b8e32256ebe3a21391fb7749f"
+  },
+  "E:\\GIT\\DnD\\transcripts\\apr18_clean.md": {
+    "mtime": 1776551205.9116032,
+    "hash": "3830b937752d9d61e2e2bbb8ade684b1"
+  },
+  "E:\\GIT\\DnD\\transcripts\\apr_11_game_session_log.md": {
+    "mtime": 1775984604.960421,
+    "hash": "70d6153e8fde0af8fe83aef18ba8c91e"
+  },
+  "E:\\GIT\\DnD\\transcripts\\Apr_25_Shaun_session_log.md": {
+    "mtime": 1777190383.611653,
+    "hash": "24f55a5e18049f3120b494e255f9330d"
+  },
+  "E:\\GIT\\DnD\\transcripts\\bedlam_game_3_session_log.md": {
+    "mtime": 1781382996.7527642,
+    "hash": "592c390895f1615122daa933cc6fec14"
+  },
+  "E:\\GIT\\DnD\\transcripts\\july25_shaun_game_session_log.md": {
+    "mtime": 1785614551.9076126,
+    "hash": "80c318ae6ce9f459553cb28c7fe8bd3f"
+  },
+  "E:\\GIT\\DnD\\transcripts\\July_5_2026_Shaun_Game_session_log.md": {
+    "mtime": 1785112827.5840855,
+    "hash": "2023bd375e5bd273f9961adf87b59af6"
+  },
+  "E:\\GIT\\DnD\\transcripts\\July_5_2026_Shaun_Game_session_log_ai_diff.md": {
+    "mtime": 1786925626.1714263,
+    "hash": "da0f546f5c72d4265300dbeb424055ef"
+  },
+  "E:\\GIT\\DnD\\transcripts\\July_5_2026_Shaun_Game_session_log_FIXED.md": {
+    "mtime": 1785113767.6415935,
+    "hash": "319b37ba60b86bd5585c30c1cbf386c4"
+  },
+  "E:\\GIT\\DnD\\transcripts\\June 20 nate game_session_log.md": {
+    "mtime": 1782143531.2989566,
+    "hash": "8d9ab16b82be2dc634864d2585663470"
+  },
+  "E:\\GIT\\DnD\\transcripts\\May-28-game_session_log.md": {
+    "mtime": 1780078929.813151,
+    "hash": "64f01ad6c09fe9c6f8aa5932d531df46"
+  },
+  "E:\\GIT\\DnD\\transcripts\\may23-game_session_log.md": {
+    "mtime": 1779664219.9106395,
+    "hash": "de55f1aeddae09d5ab8f26c3751ed6c2"
+  },
+  "E:\\GIT\\DnD\\audio_files\\Aug 15 2026.wav": {
+    "mtime": 1786925302.2109625,
+    "hash": "20003208739d3c169acb4457276edba3"
+  }
+}

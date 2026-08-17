@@ -36,3 +36,4 @@ Audacity-WhisperX.code-workspace
 # Temporary / Local Signatures
 diarize_sig.txt
 .claude/
+graphify-out/cache/
