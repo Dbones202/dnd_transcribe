@@ -1,7 +1,7 @@
 {
   "E:\\GIT\\DnD\\dnd_transcribe.py": {
-    "mtime": 1786927454.1780431,
-    "hash": "36d88ad5808605c67261c00ad33869b2"
+    "mtime": 1786944670.751437,
+    "hash": "0d29b19b5fe416bff797141a7cab3302"
   },
   "E:\\GIT\\DnD\\extract_voices.py": {
     "mtime": 1771831075.783751,
@@ -16,16 +16,16 @@
     "hash": "7164ff99b7b580653ec18183206e6a4d"
   },
   "E:\\GIT\\DnD\\AGENTS.md": {
-    "mtime": 1786926129.9675808,
-    "hash": "80750b4c92229ea26e9516e9ae5fab44"
+    "mtime": 1786927539.712219,
+    "hash": "215d3f19296892ddefbc33aa0f521b3b"
   },
   "E:\\GIT\\DnD\\CHANGELOG.md": {
     "mtime": 1786927460.3192775,
     "hash": "9ddbd968dfda96fccf9ae9bbfd772351"
   },
   "E:\\GIT\\DnD\\CLAUDE.md": {
-    "mtime": 1786926129.9691517,
-    "hash": "80750b4c92229ea26e9516e9ae5fab44"
+    "mtime": 1786927539.712219,
+    "hash": "215d3f19296892ddefbc33aa0f521b3b"
   },
   "E:\\GIT\\DnD\\diarize_sig.txt": {
     "mtime": 1771824855.2440524,
@@ -63,13 +63,21 @@
     "mtime": 1777190383.611653,
     "hash": "24f55a5e18049f3120b494e255f9330d"
   },
+  "E:\\GIT\\DnD\\transcripts\\Aug 15 2026_ai_diff.md": {
+    "mtime": 1786935256.0374334,
+    "hash": "13ae08b6a6d4daeedb25e4c6a6fa94bd"
+  },
   "E:\\GIT\\DnD\\transcripts\\Aug 15 2026_session_log.md": {
-    "mtime": 1786926953.9427502,
-    "hash": "41094fe70839c04275fbc00b55d82e77"
+    "mtime": 1786928288.9976132,
+    "hash": "eae4d0d09b1835810c4b67121e8621d2"
   },
   "E:\\GIT\\DnD\\transcripts\\Aug 15 2026_session_log_raw.md": {
-    "mtime": 1786926953.9257615,
-    "hash": "1c4a77afd17b69aea33b43463eae621b"
+    "mtime": 1786944511.994389,
+    "hash": "83e1069fc2766069fdf6be3a678b70d2"
+  },
+  "E:\\GIT\\DnD\\transcripts\\Aug 15 2026_session_log_refined.md": {
+    "mtime": 1786944434.0729992,
+    "hash": "e83e13d07de3ba5ad4f3a0ac6d4e48a1"
   },
   "E:\\GIT\\DnD\\transcripts\\bedlam_game_3_session_log.md": {
     "mtime": 1781382996.7527642,
@@ -106,9 +114,5 @@
   "E:\\GIT\\DnD\\audio_files\\Aug 15 2026.wav": {
     "mtime": 1786925302.2109625,
     "hash": "20003208739d3c169acb4457276edba3"
-  },
-  "E:\\GIT\\DnD\\audio_files\\Aug 15 2026_normalizedTemp.wav": {
-    "mtime": 1786926188.9889374,
-    "hash": "f221f72937ff5f30c7f8ed7f406c3321"
   }
 }

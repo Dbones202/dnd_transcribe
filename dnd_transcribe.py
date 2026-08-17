@@ -985,7 +985,7 @@ def time_str_to_seconds(time_str):
 def parse_markdown_for_speakers(md_path):
     import re
     speaker_segments = {}
-    pattern = re.compile(r'^\[(\d{1,2}:\d{2}:\d{2} - \d{1,2}:\d{2}:\d{2})\] \*\*(.+?)\*\*:')
+    pattern = re.compile(r'^\[(\d{1,2}:\d{2}:\d{2})\s*-\s*(\d{1,2}:\d{2}:\d{2})\]\s*\*\*(.+?)\*\*:')
     
     with open(md_path, 'r', encoding='utf-8') as f:
         for line in f:
@@ -1030,7 +1030,7 @@ def train_voices(md_path, audio_path):
     inference = Inference(model, window="whole")
     
     print(f"Loading Audio {audio_path}...")
-    audio_data = whisperx.audio.load_audio(audio_path)
+    audio_data = whisperx.load_audio(audio_path)
     
     for speaker, segments in speaker_segments.items():
         print(f"\nProcessing embeddings for: {speaker}")
@@ -1042,13 +1042,13 @@ def train_voices(md_path, audio_path):
             duration = end_sec - start_sec
             if duration < 1.0: continue
                 
-            start_sample = int(start_sec * whisperx.audio.SAMPLE_RATE)
-            end_sample = int(end_sec * whisperx.audio.SAMPLE_RATE)
+            start_sample = int(start_sec * SAMPLE_RATE)
+            end_sample = int(end_sec * SAMPLE_RATE)
             chunk_audio = audio_data[start_sample:end_sample]
             tensor_chunk = torch.from_numpy(chunk_audio).unsqueeze(0)
             
             try:
-                emb = inference({"waveform": tensor_chunk, "sample_rate": 16000})
+                emb = inference({"waveform": tensor_chunk, "sample_rate": SAMPLE_RATE})
                 speaker_embeddings.append(emb)
                 total_duration += duration
                 if total_duration > 20.0: break

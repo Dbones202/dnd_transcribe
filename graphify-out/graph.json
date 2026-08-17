@@ -90,7 +90,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L221",
       "id": "dnd_dnd_transcribe_log_metric",
-      "community": 28,
+      "community": 2,
       "norm_label": "log_metric()"
     },
     {
@@ -99,7 +99,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L228",
       "id": "dnd_dnd_transcribe_timer",
-      "community": 28,
+      "community": 2,
       "norm_label": "timer"
     },
     {
@@ -117,7 +117,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L235",
       "id": "dnd_dnd_transcribe_timer_enter",
-      "community": 28,
+      "community": 2,
       "norm_label": ".__enter__()"
     },
     {
@@ -126,7 +126,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L240",
       "id": "dnd_dnd_transcribe_timer_exit",
-      "community": 28,
+      "community": 2,
       "norm_label": ".__exit__()"
     },
     {
@@ -135,7 +135,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L245",
       "id": "dnd_dnd_transcribe_timer_format_duration",
-      "community": 28,
+      "community": 2,
       "norm_label": ".format_duration()"
     },
     {
@@ -144,7 +144,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L248",
       "id": "dnd_dnd_transcribe_generate_ai_diff",
-      "community": 28,
+      "community": 0,
       "norm_label": "generate_ai_diff()"
     },
     {
@@ -198,7 +198,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L584",
       "id": "dnd_dnd_transcribe_run_dnd_session",
-      "community": 28,
+      "community": 2,
       "norm_label": "run_dnd_session()"
     },
     {
@@ -234,7 +234,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L1075",
       "id": "dnd_dnd_transcribe_diff_two_transcripts",
-      "community": 8,
+      "community": 0,
       "norm_label": "diff_two_transcripts()"
     },
     {
@@ -270,7 +270,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L256",
       "id": "dnd_dnd_transcribe_rationale_256",
-      "community": 28,
+      "community": 0,
       "norm_label": "compares raw and refined transcript lines, computes change metrics,     and wri"
     },
     {
@@ -324,7 +324,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L1076",
       "id": "dnd_dnd_transcribe_rationale_1076",
-      "community": 8,
+      "community": 0,
       "norm_label": "utility to compare any two transcript markdown files and output an ai diff repor"
     },
     {
@@ -985,6 +985,42 @@
       "norm_label": "d&d session transcript"
     },
     {
+      "label": "Aug 15 2026_ai_diff.md",
+      "file_type": "document",
+      "source_file": "transcripts/Aug 15 2026_ai_diff.md",
+      "source_location": "L1",
+      "id": "transcripts_aug_15_2026_ai_diff_md",
+      "community": 8,
+      "norm_label": "aug 15 2026_ai_diff.md"
+    },
+    {
+      "label": "AI Refinement Evaluation & Diff Report",
+      "file_type": "document",
+      "source_file": "transcripts/Aug 15 2026_ai_diff.md",
+      "source_location": "L1",
+      "id": "transcripts_aug_15_2026_ai_diff_ai_refinement_evaluation_diff_report",
+      "community": 8,
+      "norm_label": "ai refinement evaluation & diff report"
+    },
+    {
+      "label": "Summary Metrics",
+      "file_type": "document",
+      "source_file": "transcripts/Aug 15 2026_ai_diff.md",
+      "source_location": "L7",
+      "id": "transcripts_aug_15_2026_ai_diff_summary_metrics",
+      "community": 8,
+      "norm_label": "summary metrics"
+    },
+    {
+      "label": "Detailed Line-by-Line Changes",
+      "file_type": "document",
+      "source_file": "transcripts/Aug 15 2026_ai_diff.md",
+      "source_location": "L18",
+      "id": "transcripts_aug_15_2026_ai_diff_detailed_line_by_line_changes",
+      "community": 8,
+      "norm_label": "detailed line-by-line changes"
+    },
+    {
       "label": "Aug 15 2026_session_log.md",
       "file_type": "document",
       "source_file": "transcripts/Aug 15 2026_session_log.md",
@@ -1018,6 +1054,24 @@
       "source_location": "L1",
       "id": "transcripts_aug_15_2026_session_log_raw_d_d_session_transcript_raw",
       "community": 29,
+      "norm_label": "d&d session transcript (raw)"
+    },
+    {
+      "label": "Aug 15 2026_session_log_refined.md",
+      "file_type": "document",
+      "source_file": "transcripts/Aug 15 2026_session_log_refined.md",
+      "source_location": "L1",
+      "id": "transcripts_aug_15_2026_session_log_refined_md",
+      "community": 28,
+      "norm_label": "aug 15 2026_session_log_refined.md"
+    },
+    {
+      "label": "D&D Session Transcript (Raw)",
+      "file_type": "document",
+      "source_file": "transcripts/Aug 15 2026_session_log_refined.md",
+      "source_location": "L1",
+      "id": "transcripts_aug_15_2026_session_log_refined_d_d_session_transcript_raw",
+      "community": 28,
       "norm_label": "d&d session transcript (raw)"
     },
     {
@@ -1205,7 +1259,7 @@
       "file_type": "rationale",
       "source_file": "dnd_transcribe.py",
       "source_location": "L968",
-      "community": 8,
+      "community": 0,
       "norm_label": "utility to compare any two transcript markdown files and output an ai diff repor",
       "id": "dnd_dnd_transcribe_rationale_968"
     },
@@ -1214,7 +1268,7 @@
       "file_type": "rationale",
       "source_file": "dnd_transcribe.py",
       "source_location": "L967",
-      "community": 8,
+      "community": 0,
       "norm_label": "utility to compare any two transcript markdown files and output an ai diff repor",
       "id": "dnd_dnd_transcribe_rationale_967"
     },
@@ -1313,9 +1367,9 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L348",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_transcribe_py",
-      "target": "dnd_dnd_transcribe_sanitize_llm_lines",
-      "confidence_score": 1.0
+      "target": "dnd_dnd_transcribe_sanitize_llm_lines"
     },
     {
       "relation": "contains",
@@ -1323,9 +1377,9 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L366",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_transcribe_py",
-      "target": "dnd_dnd_transcribe_send_llm_batch_request",
-      "confidence_score": 1.0
+      "target": "dnd_dnd_transcribe_send_llm_batch_request"
     },
     {
       "relation": "contains",
@@ -1333,9 +1387,9 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L402",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_transcribe_py",
-      "target": "dnd_dnd_transcribe_process_chunk_adaptive",
-      "confidence_score": 1.0
+      "target": "dnd_dnd_transcribe_process_chunk_adaptive"
     },
     {
       "relation": "contains",
@@ -1698,9 +1752,9 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L394",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_dnd_transcribe_send_llm_batch_request",
-      "target": "dnd_dnd_transcribe_sanitize_llm_lines",
-      "confidence_score": 1.0
+      "target": "dnd_dnd_transcribe_sanitize_llm_lines"
     },
     {
       "relation": "rationale_for",
@@ -1708,9 +1762,9 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L349",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_dnd_transcribe_rationale_349",
-      "target": "dnd_dnd_transcribe_sanitize_llm_lines",
-      "confidence_score": 1.0
+      "target": "dnd_dnd_transcribe_sanitize_llm_lines"
     },
     {
       "relation": "calls",
@@ -1719,9 +1773,9 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L418",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_dnd_transcribe_process_chunk_adaptive",
-      "target": "dnd_dnd_transcribe_send_llm_batch_request",
-      "confidence_score": 1.0
+      "target": "dnd_dnd_transcribe_send_llm_batch_request"
     },
     {
       "relation": "rationale_for",
@@ -1729,9 +1783,9 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L372",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_dnd_transcribe_rationale_372",
-      "target": "dnd_dnd_transcribe_send_llm_batch_request",
-      "confidence_score": 1.0
+      "target": "dnd_dnd_transcribe_send_llm_batch_request"
     },
     {
       "relation": "calls",
@@ -1740,9 +1794,9 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L507",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_dnd_transcribe_refine_transcript_with_llm",
-      "target": "dnd_dnd_transcribe_process_chunk_adaptive",
-      "confidence_score": 1.0
+      "target": "dnd_dnd_transcribe_process_chunk_adaptive"
     },
     {
       "relation": "rationale_for",
@@ -1750,9 +1804,9 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L408",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_dnd_transcribe_rationale_408",
-      "target": "dnd_dnd_transcribe_process_chunk_adaptive",
-      "confidence_score": 1.0
+      "target": "dnd_dnd_transcribe_process_chunk_adaptive"
     },
     {
       "relation": "calls",
@@ -1782,9 +1836,9 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L443",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_dnd_transcribe_rationale_443",
-      "target": "dnd_dnd_transcribe_refine_transcript_with_llm",
-      "confidence_score": 1.0
+      "target": "dnd_dnd_transcribe_refine_transcript_with_llm"
     },
     {
       "relation": "rationale_for",
@@ -1812,9 +1866,9 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L520",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_dnd_transcribe_rationale_520",
-      "target": "dnd_dnd_transcribe_refine_existing_transcript",
-      "confidence_score": 1.0
+      "target": "dnd_dnd_transcribe_refine_existing_transcript"
     },
     {
       "relation": "rationale_for",
@@ -1854,9 +1908,9 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L1076",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_dnd_transcribe_rationale_1076",
-      "target": "dnd_dnd_transcribe_diff_two_transcripts",
-      "confidence_score": 1.0
+      "target": "dnd_dnd_transcribe_diff_two_transcripts"
     },
     {
       "relation": "rationale_for",
@@ -2533,12 +2587,42 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "transcripts/Aug 15 2026_ai_diff.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "transcripts_aug_15_2026_ai_diff_md",
+      "target": "transcripts_aug_15_2026_ai_diff_ai_refinement_evaluation_diff_report",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/Aug 15 2026_ai_diff.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "transcripts_aug_15_2026_ai_diff_ai_refinement_evaluation_diff_report",
+      "target": "transcripts_aug_15_2026_ai_diff_summary_metrics",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/Aug 15 2026_ai_diff.md",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "transcripts_aug_15_2026_ai_diff_ai_refinement_evaluation_diff_report",
+      "target": "transcripts_aug_15_2026_ai_diff_detailed_line_by_line_changes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "transcripts/Aug 15 2026_session_log.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transcripts_aug_15_2026_session_log_md",
-      "target": "transcripts_aug_15_2026_session_log_d_d_session_transcript",
-      "confidence_score": 1.0
+      "target": "transcripts_aug_15_2026_session_log_d_d_session_transcript"
     },
     {
       "relation": "contains",
@@ -2546,8 +2630,18 @@
       "source_file": "transcripts/Aug 15 2026_session_log_raw.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transcripts_aug_15_2026_session_log_raw_md",
-      "target": "transcripts_aug_15_2026_session_log_raw_d_d_session_transcript_raw",
+      "target": "transcripts_aug_15_2026_session_log_raw_d_d_session_transcript_raw"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/Aug 15 2026_session_log_refined.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "transcripts_aug_15_2026_session_log_refined_md",
+      "target": "transcripts_aug_15_2026_session_log_refined_d_d_session_transcript_raw",
       "confidence_score": 1.0
     },
     {
@@ -2662,5 +2756,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "aee2d2891cd22012356469d4343d651f1a5f1ec7"
+  "built_at_commit": "104e2043c45e23db6167d290779e31bfd682e051"
 }
