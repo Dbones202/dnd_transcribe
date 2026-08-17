@@ -90,7 +90,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L221",
       "id": "dnd_dnd_transcribe_log_metric",
-      "community": 0,
+      "community": 28,
       "norm_label": "log_metric()"
     },
     {
@@ -99,7 +99,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L228",
       "id": "dnd_dnd_transcribe_timer",
-      "community": 0,
+      "community": 28,
       "norm_label": "timer"
     },
     {
@@ -117,7 +117,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L235",
       "id": "dnd_dnd_transcribe_timer_enter",
-      "community": 0,
+      "community": 28,
       "norm_label": ".__enter__()"
     },
     {
@@ -126,7 +126,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L240",
       "id": "dnd_dnd_transcribe_timer_exit",
-      "community": 0,
+      "community": 28,
       "norm_label": ".__exit__()"
     },
     {
@@ -135,7 +135,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L245",
       "id": "dnd_dnd_transcribe_timer_format_duration",
-      "community": 0,
+      "community": 28,
       "norm_label": ".format_duration()"
     },
     {
@@ -171,14 +171,14 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L534",
       "id": "dnd_dnd_transcribe_run_dnd_session",
-      "community": 0,
+      "community": 28,
       "norm_label": "run_dnd_session()"
     },
     {
       "label": "time_str_to_seconds()",
       "file_type": "code",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L865",
+      "source_location": "L866",
       "id": "dnd_dnd_transcribe_time_str_to_seconds",
       "community": 0,
       "norm_label": "time_str_to_seconds()"
@@ -187,7 +187,7 @@
       "label": "parse_markdown_for_speakers()",
       "file_type": "code",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L876",
+      "source_location": "L877",
       "id": "dnd_dnd_transcribe_parse_markdown_for_speakers",
       "community": 0,
       "norm_label": "parse_markdown_for_speakers()"
@@ -196,7 +196,7 @@
       "label": "train_voices()",
       "file_type": "code",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L897",
+      "source_location": "L898",
       "id": "dnd_dnd_transcribe_train_voices",
       "community": 0,
       "norm_label": "train_voices()"
@@ -205,7 +205,7 @@
       "label": "diff_two_transcripts()",
       "file_type": "code",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L966",
+      "source_location": "L967",
       "id": "dnd_dnd_transcribe_diff_two_transcripts",
       "community": 0,
       "norm_label": "diff_two_transcripts()"
@@ -268,8 +268,8 @@
       "label": "Utility to compare any two transcript markdown files and output an AI diff repor",
       "file_type": "rationale",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L967",
-      "id": "dnd_dnd_transcribe_rationale_967",
+      "source_location": "L968",
+      "id": "dnd_dnd_transcribe_rationale_968",
       "community": 0,
       "norm_label": "utility to compare any two transcript markdown files and output an ai diff repor"
     },
@@ -1093,6 +1093,15 @@
       "norm_label": "d&d session transcript"
     },
     {
+      "label": "Utility to compare any two transcript markdown files and output an AI diff repor",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L967",
+      "community": 0,
+      "norm_label": "utility to compare any two transcript markdown files and output an ai diff repor",
+      "id": "dnd_dnd_transcribe_rationale_967"
+    },
+    {
       "label": "Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio",
       "file_type": "rationale",
       "source_file": "dnd_transcribe.py",
@@ -1613,6 +1622,16 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "dnd_transcribe.py",
+      "source_location": "L968",
+      "weight": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_968",
+      "target": "dnd_dnd_transcribe_diff_two_transcripts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
       "source_location": "L967",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -1757,9 +1776,9 @@
       "source_file": "CHANGELOG.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "changelog_md",
-      "target": "dnd_changelog_changelog",
-      "confidence_score": 1.0
+      "target": "dnd_changelog_changelog"
     },
     {
       "relation": "contains",
@@ -1767,9 +1786,9 @@
       "source_file": "CHANGELOG.md",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_changelog_changelog",
-      "target": "dnd_changelog_1_1_0_2026_08_16",
-      "confidence_score": 1.0
+      "target": "dnd_changelog_1_1_0_2026_08_16"
     },
     {
       "relation": "contains",
@@ -1777,9 +1796,9 @@
       "source_file": "CHANGELOG.md",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_changelog_1_1_0_2026_08_16",
-      "target": "dnd_changelog_added",
-      "confidence_score": 1.0
+      "target": "dnd_changelog_added"
     },
     {
       "relation": "contains",
@@ -1787,9 +1806,9 @@
       "source_file": "CHANGELOG.md",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_changelog_1_1_0_2026_08_16",
-      "target": "dnd_changelog_changed",
-      "confidence_score": 1.0
+      "target": "dnd_changelog_changed"
     },
     {
       "relation": "contains",
@@ -1797,9 +1816,9 @@
       "source_file": "CHANGELOG.md",
       "source_location": "L24",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "dnd_changelog_1_1_0_2026_08_16",
-      "target": "dnd_changelog_fixed",
-      "confidence_score": 1.0
+      "target": "dnd_changelog_fixed"
     },
     {
       "relation": "contains",
@@ -2383,5 +2402,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "3611eab029bf68e4cffe93d7fcea8022f4336b95"
+  "built_at_commit": "570cae2ff9b6219c6315fff6406aa2613c278c63"
 }

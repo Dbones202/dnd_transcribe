@@ -1,16 +1,16 @@
 # Graph Report - DnD  (2026-08-16)
 
 ## Corpus Check
-- 23 files · ~452,814 words
+- 23 files · ~452,820 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 124 nodes · 124 edges · 28 communities (14 shown, 14 thin omitted)
+- 125 nodes · 125 edges · 29 communities (15 shown, 14 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3611eab0`
+- Built from commit: `570cae2f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -40,6 +40,7 @@
 - [[_COMMUNITY_Community 25|Community 25]]
 - [[_COMMUNITY_Community 26|Community 26]]
 - [[_COMMUNITY_Community 27|Community 27]]
+- [[_COMMUNITY_Community 28|Community 28]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `run_dnd_session()` - 9 edges
@@ -55,13 +56,15 @@
 
 ## Surprising Connections (you probably didn't know these)
 - `run_dnd_session()` --calls--> `TqdmList`  [EXTRACTED]
-  dnd_transcribe.py → dnd_transcribe.py  _Bridges community 2 → community 0_
+  dnd_transcribe.py → dnd_transcribe.py  _Bridges community 2 → community 28_
+- `run_dnd_session()` --calls--> `generate_ai_diff()`  [EXTRACTED]
+  dnd_transcribe.py → dnd_transcribe.py  _Bridges community 0 → community 28_
 
-## Communities (28 total, 14 thin omitted)
+## Communities (29 total, 14 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.19
-Nodes (15): diff_two_transcripts(), generate_ai_diff(), log_metric(), parse_markdown_for_speakers(), Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio, Compares raw and refined transcript lines, computes change metrics,     and wri, Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio, Standalone function to refine an existing raw markdown transcript file,     pro (+7 more)
+Cohesion: 0.2
+Nodes (13): diff_two_transcripts(), generate_ai_diff(), parse_markdown_for_speakers(), Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio, Compares raw and refined transcript lines, computes change metrics,     and wri, Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio, Standalone function to refine an existing raw markdown transcript file,     pro, Utility to compare any two transcript markdown files and output an AI diff repor (+5 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.2
@@ -103,8 +106,12 @@ Nodes (5): [1.1.0] - 2026-08-16, Added, Changed, Changelog, Fixed
 Cohesion: 0.5
 Nodes (3): AI Refinement Evaluation & Diff Report, Detailed Line-by-Line Changes, Summary Metrics
 
+### Community 28 - "Community 28"
+Cohesion: 0.73
+Nodes (3): log_metric(), run_dnd_session(), Timer
+
 ## Knowledge Gaps
-- **51 isolated node(s):** `Context manager to prevent Windows from sleeping during execution.`, `A list wrapper that updates a tqdm progress bar when iterated.     Used to show`, `Monkeypatched version of whisperx.asr.FasterWhisperPipeline.transcribe     to u`, `Compares raw and refined transcript lines, computes change metrics,     and wri`, `Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio` (+46 more)
+- **52 isolated node(s):** `Context manager to prevent Windows from sleeping during execution.`, `A list wrapper that updates a tqdm progress bar when iterated.     Used to show`, `Monkeypatched version of whisperx.asr.FasterWhisperPipeline.transcribe     to u`, `Compares raw and refined transcript lines, computes change metrics,     and wri`, `Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio` (+47 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -112,10 +119,10 @@ Nodes (3): AI Refinement Evaluation & Diff Report, Detailed Line-by-Line Changes
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `D&D Session Transcriber & Voice Harvester` connect `Community 1` to `Community 25`, `Community 3`, `Community 4`?**
-  _High betweenness centrality (0.060) - this node is a cross-community bridge._
+  _High betweenness centrality (0.059) - this node is a cross-community bridge._
 - **Why does `🎓 Step 3: How to Train the Software (Refining Voice Profiles)` connect `Community 3` to `Community 1`?**
-  _High betweenness centrality (0.027) - this node is a cross-community bridge._
+  _High betweenness centrality (0.026) - this node is a cross-community bridge._
 - **Why does `🛠️ Step 1: Open the Virtual Environment (venv)` connect `Community 4` to `Community 1`?**
   _High betweenness centrality (0.024) - this node is a cross-community bridge._
 - **What connects `Context manager to prevent Windows from sleeping during execution.`, `A list wrapper that updates a tqdm progress bar when iterated.     Used to show`, `Monkeypatched version of whisperx.asr.FasterWhisperPipeline.transcribe     to u` to the rest of the system?**
-  _51 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _52 weakly-connected nodes found - possible documentation gaps or missing edges._

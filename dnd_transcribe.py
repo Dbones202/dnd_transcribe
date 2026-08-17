@@ -589,7 +589,7 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=50):
 
     # 1. Transcribe
     with Timer("Loading & Transcription") as t_transcribe:
-        model = whisperx.load_model("large-v3-turbo", DEVICE_ASR, compute_type=COMPUTE_TYPE)
+        model = whisperx.load_model("large-v3-turbo", DEVICE_ASR, compute_type=COMPUTE_TYPE, language="en")
         audio = whisperx.load_audio(process_file_path)
         
         audio_duration = len(audio) / SAMPLE_RATE
