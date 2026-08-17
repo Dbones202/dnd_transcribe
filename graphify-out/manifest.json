@@ -1,7 +1,7 @@
 {
   "E:\\GIT\\DnD\\dnd_transcribe.py": {
-    "mtime": 1786926080.6145256,
-    "hash": "42d93ff65f05156251ab5370b24475c8"
+    "mtime": 1786927454.1780431,
+    "hash": "36d88ad5808605c67261c00ad33869b2"
   },
   "E:\\GIT\\DnD\\extract_voices.py": {
     "mtime": 1771831075.783751,
@@ -16,16 +16,16 @@
     "hash": "7164ff99b7b580653ec18183206e6a4d"
   },
   "E:\\GIT\\DnD\\AGENTS.md": {
-    "mtime": 1786925942.4763522,
-    "hash": "0807ad162a7436c8cca48a92b0a3e06c"
+    "mtime": 1786926129.9675808,
+    "hash": "80750b4c92229ea26e9516e9ae5fab44"
   },
   "E:\\GIT\\DnD\\CHANGELOG.md": {
-    "mtime": 1786925738.3095725,
-    "hash": "f842e7e0930cb45d8f6c65e4edd53954"
+    "mtime": 1786927460.3192775,
+    "hash": "9ddbd968dfda96fccf9ae9bbfd772351"
   },
   "E:\\GIT\\DnD\\CLAUDE.md": {
-    "mtime": 1786925942.4763522,
-    "hash": "0807ad162a7436c8cca48a92b0a3e06c"
+    "mtime": 1786926129.9691517,
+    "hash": "80750b4c92229ea26e9516e9ae5fab44"
   },
   "E:\\GIT\\DnD\\diarize_sig.txt": {
     "mtime": 1771824855.2440524,
@@ -62,6 +62,14 @@
   "E:\\GIT\\DnD\\transcripts\\Apr_25_Shaun_session_log.md": {
     "mtime": 1777190383.611653,
     "hash": "24f55a5e18049f3120b494e255f9330d"
+  },
+  "E:\\GIT\\DnD\\transcripts\\Aug 15 2026_session_log.md": {
+    "mtime": 1786926953.9427502,
+    "hash": "41094fe70839c04275fbc00b55d82e77"
+  },
+  "E:\\GIT\\DnD\\transcripts\\Aug 15 2026_session_log_raw.md": {
+    "mtime": 1786926953.9257615,
+    "hash": "1c4a77afd17b69aea33b43463eae621b"
   },
   "E:\\GIT\\DnD\\transcripts\\bedlam_game_3_session_log.md": {
     "mtime": 1781382996.7527642,
@@ -100,7 +108,7 @@
     "hash": "20003208739d3c169acb4457276edba3"
   },
   "E:\\GIT\\DnD\\audio_files\\Aug 15 2026_normalizedTemp.wav": {
-    "mtime": 1786926040.3210278,
+    "mtime": 1786926188.9889374,
     "hash": "f221f72937ff5f30c7f8ed7f406c3321"
   }
 }

@@ -18,7 +18,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L48",
       "id": "dnd_dnd_transcribe_windowssleeppreventer",
-      "community": 8,
+      "community": 0,
       "norm_label": "windowssleeppreventer"
     },
     {
@@ -27,7 +27,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L53",
       "id": "dnd_dnd_transcribe_windowssleeppreventer_enter",
-      "community": 8,
+      "community": 0,
       "norm_label": ".__enter__()"
     },
     {
@@ -36,7 +36,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L64",
       "id": "dnd_dnd_transcribe_windowssleeppreventer_exit",
-      "community": 8,
+      "community": 0,
       "norm_label": ".__exit__()"
     },
     {
@@ -144,14 +144,41 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L248",
       "id": "dnd_dnd_transcribe_generate_ai_diff",
-      "community": 0,
+      "community": 28,
       "norm_label": "generate_ai_diff()"
+    },
+    {
+      "label": "sanitize_llm_lines()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L348",
+      "id": "dnd_dnd_transcribe_sanitize_llm_lines",
+      "community": 0,
+      "norm_label": "sanitize_llm_lines()"
+    },
+    {
+      "label": "_send_llm_batch_request()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L366",
+      "id": "dnd_dnd_transcribe_send_llm_batch_request",
+      "community": 0,
+      "norm_label": "_send_llm_batch_request()"
+    },
+    {
+      "label": "_process_chunk_adaptive()",
+      "file_type": "code",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L402",
+      "id": "dnd_dnd_transcribe_process_chunk_adaptive",
+      "community": 0,
+      "norm_label": "_process_chunk_adaptive()"
     },
     {
       "label": "refine_transcript_with_llm()",
       "file_type": "code",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L348",
+      "source_location": "L438",
       "id": "dnd_dnd_transcribe_refine_transcript_with_llm",
       "community": 0,
       "norm_label": "refine_transcript_with_llm()"
@@ -160,7 +187,7 @@
       "label": "refine_existing_transcript()",
       "file_type": "code",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L465",
+      "source_location": "L515",
       "id": "dnd_dnd_transcribe_refine_existing_transcript",
       "community": 0,
       "norm_label": "refine_existing_transcript()"
@@ -169,7 +196,7 @@
       "label": "run_dnd_session()",
       "file_type": "code",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L534",
+      "source_location": "L584",
       "id": "dnd_dnd_transcribe_run_dnd_session",
       "community": 28,
       "norm_label": "run_dnd_session()"
@@ -178,7 +205,7 @@
       "label": "time_str_to_seconds()",
       "file_type": "code",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L866",
+      "source_location": "L974",
       "id": "dnd_dnd_transcribe_time_str_to_seconds",
       "community": 0,
       "norm_label": "time_str_to_seconds()"
@@ -187,7 +214,7 @@
       "label": "parse_markdown_for_speakers()",
       "file_type": "code",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L877",
+      "source_location": "L985",
       "id": "dnd_dnd_transcribe_parse_markdown_for_speakers",
       "community": 0,
       "norm_label": "parse_markdown_for_speakers()"
@@ -196,7 +223,7 @@
       "label": "train_voices()",
       "file_type": "code",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L898",
+      "source_location": "L1006",
       "id": "dnd_dnd_transcribe_train_voices",
       "community": 0,
       "norm_label": "train_voices()"
@@ -205,9 +232,9 @@
       "label": "diff_two_transcripts()",
       "file_type": "code",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L967",
+      "source_location": "L1075",
       "id": "dnd_dnd_transcribe_diff_two_transcripts",
-      "community": 0,
+      "community": 8,
       "norm_label": "diff_two_transcripts()"
     },
     {
@@ -216,7 +243,7 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L49",
       "id": "dnd_dnd_transcribe_rationale_49",
-      "community": 8,
+      "community": 0,
       "norm_label": "context manager to prevent windows from sleeping during execution."
     },
     {
@@ -243,15 +270,42 @@
       "source_file": "dnd_transcribe.py",
       "source_location": "L256",
       "id": "dnd_dnd_transcribe_rationale_256",
-      "community": 0,
+      "community": 28,
       "norm_label": "compares raw and refined transcript lines, computes change metrics,     and wri"
+    },
+    {
+      "label": "Cleans raw LLM output by stripping code fences, reasoning/thinking tags,     an",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L349",
+      "id": "dnd_dnd_transcribe_rationale_349",
+      "community": 0,
+      "norm_label": "cleans raw llm output by stripping code fences, reasoning/thinking tags,     an"
+    },
+    {
+      "label": "Sends a single batch request to LM Studio and returns cleaned lines if line coun",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L372",
+      "id": "dnd_dnd_transcribe_rationale_372",
+      "community": 0,
+      "norm_label": "sends a single batch request to lm studio and returns cleaned lines if line coun"
+    },
+    {
+      "label": "Recursively processes a dialogue chunk:     1. Tries the full batch (e.g. 25 li",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L408",
+      "id": "dnd_dnd_transcribe_rationale_408",
+      "community": 0,
+      "norm_label": "recursively processes a dialogue chunk:     1. tries the full batch (e.g. 25 li"
     },
     {
       "label": "Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio",
       "file_type": "rationale",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L353",
-      "id": "dnd_dnd_transcribe_rationale_353",
+      "source_location": "L443",
+      "id": "dnd_dnd_transcribe_rationale_443",
       "community": 0,
       "norm_label": "optional post-processing pass using local llm (e.g. gemma / llama via lm studio"
     },
@@ -259,8 +313,8 @@
       "label": "Standalone function to refine an existing raw markdown transcript file,     pro",
       "file_type": "rationale",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L470",
-      "id": "dnd_dnd_transcribe_rationale_470",
+      "source_location": "L520",
+      "id": "dnd_dnd_transcribe_rationale_520",
       "community": 0,
       "norm_label": "standalone function to refine an existing raw markdown transcript file,     pro"
     },
@@ -268,9 +322,9 @@
       "label": "Utility to compare any two transcript markdown files and output an AI diff repor",
       "file_type": "rationale",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L968",
-      "id": "dnd_dnd_transcribe_rationale_968",
-      "community": 0,
+      "source_location": "L1076",
+      "id": "dnd_dnd_transcribe_rationale_1076",
+      "community": 8,
       "norm_label": "utility to compare any two transcript markdown files and output an ai diff repor"
     },
     {
@@ -448,7 +502,7 @@
       "label": "Changed",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L20",
+      "source_location": "L22",
       "id": "dnd_changelog_changed",
       "community": 26,
       "norm_label": "changed"
@@ -457,7 +511,7 @@
       "label": "Fixed",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L24",
+      "source_location": "L26",
       "id": "dnd_changelog_fixed",
       "community": 26,
       "norm_label": "fixed"
@@ -720,7 +774,7 @@
       "source_file": "README.md",
       "source_location": "L105",
       "id": "dnd_readme_commands_options",
-      "community": 25,
+      "community": 1,
       "norm_label": "commands & options"
     },
     {
@@ -729,7 +783,7 @@
       "source_file": "README.md",
       "source_location": "L107",
       "id": "dnd_readme_codeblock_8",
-      "community": 25,
+      "community": 1,
       "norm_label": "code:powershell (python dnd_transcribe.py -a audio_files/session_1.wav)"
     },
     {
@@ -738,7 +792,7 @@
       "source_file": "README.md",
       "source_location": "L111",
       "id": "dnd_readme_codeblock_9",
-      "community": 25,
+      "community": 1,
       "norm_label": "code:powershell (python dnd_transcribe.py -a audio_files/session_1.wav --no-l)"
     },
     {
@@ -747,7 +801,7 @@
       "source_file": "README.md",
       "source_location": "L115",
       "id": "dnd_readme_codeblock_10",
-      "community": 25,
+      "community": 1,
       "norm_label": "code:powershell (python dnd_transcribe.py --refine \"transcripts/my_session_se)"
     },
     {
@@ -756,7 +810,7 @@
       "source_file": "README.md",
       "source_location": "L119",
       "id": "dnd_readme_codeblock_11",
-      "community": 25,
+      "community": 1,
       "norm_label": "code:powershell (python dnd_transcribe.py --diff \"transcripts/session_raw.md\")"
     },
     {
@@ -765,7 +819,7 @@
       "source_file": "README.md",
       "source_location": "L123",
       "id": "dnd_readme_codeblock_12",
-      "community": 25,
+      "community": 1,
       "norm_label": "code:powershell (python dnd_transcribe.py --refine \"transcripts/session_raw.m)"
     },
     {
@@ -792,7 +846,7 @@
       "source_file": "README.md",
       "source_location": "L153",
       "id": "dnd_readme_configuration_prerequisites",
-      "community": 25,
+      "community": 1,
       "norm_label": "\u2699\ufe0f configuration & prerequisites"
     },
     {
@@ -801,7 +855,7 @@
       "source_file": "README.md",
       "source_location": "L157",
       "id": "dnd_readme_codeblock_13",
-      "community": 25,
+      "community": 1,
       "norm_label": "code:env (hf_token=\"hf_your_token_here\")"
     },
     {
@@ -810,7 +864,7 @@
       "source_file": "README.md",
       "source_location": "L162",
       "id": "dnd_readme_codeblock_14",
-      "community": 25,
+      "community": 1,
       "norm_label": "code:powershell (python verify_gpu.py)"
     },
     {
@@ -929,6 +983,42 @@
       "id": "transcripts_apr_25_shaun_session_log_d_d_session_transcript",
       "community": 16,
       "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "Aug 15 2026_session_log.md",
+      "file_type": "document",
+      "source_file": "transcripts/Aug 15 2026_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_aug_15_2026_session_log_md",
+      "community": 25,
+      "norm_label": "aug 15 2026_session_log.md"
+    },
+    {
+      "label": "D&D Session Transcript",
+      "file_type": "document",
+      "source_file": "transcripts/Aug 15 2026_session_log.md",
+      "source_location": "L1",
+      "id": "transcripts_aug_15_2026_session_log_d_d_session_transcript",
+      "community": 25,
+      "norm_label": "d&d session transcript"
+    },
+    {
+      "label": "Aug 15 2026_session_log_raw.md",
+      "file_type": "document",
+      "source_file": "transcripts/Aug 15 2026_session_log_raw.md",
+      "source_location": "L1",
+      "id": "transcripts_aug_15_2026_session_log_raw_md",
+      "community": 29,
+      "norm_label": "aug 15 2026_session_log_raw.md"
+    },
+    {
+      "label": "D&D Session Transcript (Raw)",
+      "file_type": "document",
+      "source_file": "transcripts/Aug 15 2026_session_log_raw.md",
+      "source_location": "L1",
+      "id": "transcripts_aug_15_2026_session_log_raw_d_d_session_transcript_raw",
+      "community": 29,
+      "norm_label": "d&d session transcript (raw)"
     },
     {
       "label": "bedlam_game_3_session_log.md",
@@ -1093,11 +1183,38 @@
       "norm_label": "d&d session transcript"
     },
     {
+      "label": "Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L353",
+      "community": 0,
+      "norm_label": "optional post-processing pass using local llm (e.g. gemma / llama via lm studio",
+      "id": "dnd_dnd_transcribe_rationale_353"
+    },
+    {
+      "label": "Standalone function to refine an existing raw markdown transcript file,     pro",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L470",
+      "community": 0,
+      "norm_label": "standalone function to refine an existing raw markdown transcript file,     pro",
+      "id": "dnd_dnd_transcribe_rationale_470"
+    },
+    {
+      "label": "Utility to compare any two transcript markdown files and output an AI diff repor",
+      "file_type": "rationale",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L968",
+      "community": 8,
+      "norm_label": "utility to compare any two transcript markdown files and output an ai diff repor",
+      "id": "dnd_dnd_transcribe_rationale_968"
+    },
+    {
       "label": "Utility to compare any two transcript markdown files and output an AI diff repor",
       "file_type": "rationale",
       "source_file": "dnd_transcribe.py",
       "source_location": "L967",
-      "community": 0,
+      "community": 8,
       "norm_label": "utility to compare any two transcript markdown files and output an ai diff repor",
       "id": "dnd_dnd_transcribe_rationale_967"
     },
@@ -1189,6 +1306,36 @@
       "confidence_score": 1.0,
       "source": "dnd_transcribe_py",
       "target": "dnd_dnd_transcribe_generate_ai_diff"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L348",
+      "weight": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_sanitize_llm_lines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L366",
+      "weight": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_send_llm_batch_request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L402",
+      "weight": 1.0,
+      "source": "dnd_transcribe_py",
+      "target": "dnd_dnd_transcribe_process_chunk_adaptive",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -1549,6 +1696,69 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "dnd_transcribe.py",
+      "source_location": "L394",
+      "weight": 1.0,
+      "source": "dnd_dnd_transcribe_send_llm_batch_request",
+      "target": "dnd_dnd_transcribe_sanitize_llm_lines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L349",
+      "weight": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_349",
+      "target": "dnd_dnd_transcribe_sanitize_llm_lines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L418",
+      "weight": 1.0,
+      "source": "dnd_dnd_transcribe_process_chunk_adaptive",
+      "target": "dnd_dnd_transcribe_send_llm_batch_request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L372",
+      "weight": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_372",
+      "target": "dnd_dnd_transcribe_send_llm_batch_request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L507",
+      "weight": 1.0,
+      "source": "dnd_dnd_transcribe_refine_transcript_with_llm",
+      "target": "dnd_dnd_transcribe_process_chunk_adaptive",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L408",
+      "weight": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_408",
+      "target": "dnd_dnd_transcribe_process_chunk_adaptive",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
       "source_location": "L507",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -1570,6 +1780,16 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "dnd_transcribe.py",
+      "source_location": "L443",
+      "weight": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_443",
+      "target": "dnd_dnd_transcribe_refine_transcript_with_llm",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
       "source_location": "L353",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -1585,6 +1805,16 @@
       "confidence_score": 1.0,
       "source": "dnd_dnd_transcribe_rationale_249",
       "target": "dnd_dnd_transcribe_refine_transcript_with_llm"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L520",
+      "weight": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_520",
+      "target": "dnd_dnd_transcribe_refine_existing_transcript",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -1622,11 +1852,21 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "dnd_transcribe.py",
-      "source_location": "L968",
+      "source_location": "L1076",
       "weight": 1.0,
-      "source": "dnd_dnd_transcribe_rationale_968",
+      "source": "dnd_dnd_transcribe_rationale_1076",
       "target": "dnd_dnd_transcribe_diff_two_transcripts",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dnd_transcribe.py",
+      "source_location": "L968",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "dnd_dnd_transcribe_rationale_968",
+      "target": "dnd_dnd_transcribe_diff_two_transcripts"
     },
     {
       "relation": "rationale_for",
@@ -2293,6 +2533,26 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "transcripts/Aug 15 2026_session_log.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "transcripts_aug_15_2026_session_log_md",
+      "target": "transcripts_aug_15_2026_session_log_d_d_session_transcript",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transcripts/Aug 15 2026_session_log_raw.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "transcripts_aug_15_2026_session_log_raw_md",
+      "target": "transcripts_aug_15_2026_session_log_raw_d_d_session_transcript_raw",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "transcripts/bedlam_game_3_session_log.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -2402,5 +2662,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "570cae2ff9b6219c6315fff6406aa2613c278c63"
+  "built_at_commit": "aee2d2891cd22012356469d4343d651f1a5f1ec7"
 }

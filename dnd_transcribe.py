@@ -345,15 +345,104 @@ def generate_ai_diff(
         "modified_lines": modified_lines
     }
 
+def sanitize_llm_lines(text: str) -> List[str]:
+    """
+    Cleans raw LLM output by stripping code fences, reasoning/thinking tags,
+    and extraneous whitespace while preserving line structure.
+    """
+    import re
+    # Strip <think>...</think> reasoning blocks from newer models
+    cleaned = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
+    
+    lines = []
+    for line in cleaned.splitlines():
+        stripped = line.strip()
+        # Skip markdown code fences
+        if stripped.startswith("```") or stripped == "":
+            continue
+        lines.append(stripped)
+    return lines
+
+def _send_llm_batch_request(
+    chunk: List[str], 
+    endpoint: str, 
+    system_prompt: str, 
+    timeout: float = 360.0
+) -> Optional[List[str]]:
+    """Sends a single batch request to LM Studio and returns cleaned lines if line count matches."""
+    prompt_content = "\n".join(chunk)
+    payload = {
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Refine these transcript lines:\n\n{prompt_content}"}
+        ],
+        "temperature": 0.1,
+        "max_tokens": 4096
+    }
+    
+    try:
+        req_data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            endpoint, 
+            data=req_data, 
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            res_body = json.loads(resp.read().decode("utf-8"))
+            output_text = res_body["choices"][0]["message"]["content"]
+            output_lines = sanitize_llm_lines(output_text)
+            
+            if len(output_lines) == len(chunk):
+                return output_lines
+    except Exception as e:
+        pass
+    return None
+
+def _process_chunk_adaptive(
+    chunk: List[str], 
+    endpoint: str, 
+    system_prompt: str, 
+    batch_label: str
+) -> tuple[List[str], int, int]:
+    """
+    Recursively processes a dialogue chunk:
+    1. Tries the full batch (e.g. 25 lines).
+    2. If it fails or line count mismatches, splits into two smaller halves (e.g. 13 and 12 lines).
+    3. If a small chunk still fails after fallback, preserves verbatim raw lines.
+    Returns (refined_lines, success_batches, fallback_batches).
+    """
+    print(f"  -> Processing batch {batch_label} ({len(chunk)} lines)... (Waiting for LLM response)")
+    
+    # 1. First attempt with full chunk
+    result = _send_llm_batch_request(chunk, endpoint, system_prompt, timeout=360.0)
+    if result is not None:
+        print(f"     Batch {batch_label} completed successfully ({len(chunk)} lines).")
+        return result, 1, 0
+        
+    # 2. Adaptive fallback split if chunk has more than 8 lines
+    if len(chunk) > 8:
+        mid = (len(chunk) + 1) // 2
+        chunk_a = chunk[:mid]
+        chunk_b = chunk[mid:]
+        print(f"  [Adaptive Split] Batch {batch_label} ({len(chunk)} lines) mismatched/timed out -> Splitting into sub-batches: {len(chunk_a)} + {len(chunk_b)} lines...")
+        
+        lines_a, s_a, f_a = _process_chunk_adaptive(chunk_a, endpoint, system_prompt, f"{batch_label}a")
+        lines_b, s_b, f_b = _process_chunk_adaptive(chunk_b, endpoint, system_prompt, f"{batch_label}b")
+        return lines_a + lines_b, s_a + s_b, f_a + f_b
+        
+    # 3. Final fallback: keep raw chunk
+    print(f"  [LLM Warning] Sub-batch {batch_label} ({len(chunk)} lines) could not be refined by LLM. Keeping raw chunk.")
+    return chunk, 0, 1
+
 def refine_transcript_with_llm(
     formatted_lines: List[str], 
     api_url: str = None,
-    batch_size: int = 50
+    batch_size: int = 25
 ) -> tuple[List[str], dict]:
     """
     Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio REST API)
-    to refine D&D terms, homophones, punctuation, and stutter artifacts without altering verbatim meaning or line structure.
-    Returns (refined_lines, batch_stats).
+    with 25-line standard batches, 360s timeout, and adaptive 13/12 fallback splitting.
     """
     if not api_url:
         api_url = os.getenv("LLM_API_URL", "http://localhost:1234/v1")
@@ -393,8 +482,8 @@ def refine_transcript_with_llm(
         return formatted_lines, stats
 
     print("\n--- Refining Transcript with Local LLM (LM Studio) ---")
-    print(f"[NOTICE] Processing {stats['total']} batches (Batch size: {batch_size} lines)...")
-    print("[NOTICE] Batch HTTP timeout is set to 300s (5 minutes).\n")
+    print(f"[NOTICE] Standard batch size: {batch_size} lines (with adaptive 13/12 fallback).")
+    print("[NOTICE] Batch HTTP timeout: 360s (6 minutes).\n")
     
     system_prompt = (
         "You are an expert editor for Dungeons & Dragons tabletop session audio transcripts.\n"
@@ -413,59 +502,20 @@ def refine_transcript_with_llm(
     for i in range(0, len(formatted_lines), batch_size):
         batch_num = i // batch_size + 1
         chunk = formatted_lines[i:i + batch_size]
-        prompt_content = "\n".join(chunk)
+        batch_label = f"{batch_num}/{total_batches}"
         
-        print(f"  -> Processing batch {batch_num}/{total_batches} ({len(chunk)} lines)... (Waiting for LLM response)")
-        
-        payload = {
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Refine these transcript lines:\n\n{prompt_content}"}
-            ],
-            "temperature": 0.1,
-            "max_tokens": 4096
-        }
-        
-        try:
-            req_data = json.dumps(payload).encode("utf-8")
-            req = urllib.request.Request(
-                endpoint, 
-                data=req_data, 
-                headers={"Content-Type": "application/json"},
-                method="POST"
-            )
-            with urllib.request.urlopen(req, timeout=300.0) as resp:
-                res_body = json.loads(resp.read().decode("utf-8"))
-                output_text = res_body["choices"][0]["message"]["content"].strip()
-                
-                output_lines = [l for l in output_text.splitlines() if l.strip()]
-                if len(output_lines) == len(chunk):
-                    refined_lines.extend(output_lines)
-                    stats['completed'] += 1
-                    print(f"     Batch {batch_num}/{total_batches} completed successfully.")
-                else:
-                    print(f"  [LLM Warning] Line count mismatch in batch {batch_num} (expected {len(chunk)}, got {len(output_lines)}). Keeping raw chunk.")
-                    refined_lines.extend(chunk)
-                    stats['failed'] += 1
-        except urllib.error.HTTPError as e:
-            if e.code == 400:
-                print(f"  [LLM Error] Batch {batch_num} failed (HTTP 400 Bad Request): Ensure a model is loaded in LM Studio. Keeping raw chunk.")
-            else:
-                print(f"  [LLM Error] Batch {batch_num} failed with HTTP {e.code}: {e.reason}. Keeping raw chunk.")
-            refined_lines.extend(chunk)
-            stats['failed'] += 1
-        except Exception as e:
-            print(f"  [LLM Error] Failed to refine batch {batch_num}: {e}. Keeping raw chunk.")
-            refined_lines.extend(chunk)
-            stats['failed'] += 1
+        chunk_refined, s_count, f_count = _process_chunk_adaptive(chunk, endpoint, system_prompt, batch_label)
+        refined_lines.extend(chunk_refined)
+        stats['completed'] += s_count
+        stats['failed'] += f_count
             
-    print(f"[LM Studio] LLM refinement complete ({stats['completed']}/{total_batches} successful batches).")
+    print(f"[LM Studio] LLM refinement complete ({stats['completed']} successful batches, {stats['failed']} fallbacks).")
     return refined_lines, stats
 
 def refine_existing_transcript(
     md_path: str, 
     api_url: str = None, 
-    batch_size: int = 50
+    batch_size: int = 25
 ):
     """
     Standalone function to refine an existing raw markdown transcript file,
@@ -531,7 +581,7 @@ def refine_existing_transcript(
         batch_stats=stats
     )
 
-def run_dnd_session(audio_path=None, skip_llm=False, batch_size=50):
+def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
     overall_timer = Timer("Total Session")
     overall_timer.__enter__() # Manually start total timer
 
@@ -664,27 +714,78 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=50):
                 speaker_mapping = {}
                 for spk, chunks in speaker_chunks.items():
                     chunks.sort(key=lambda x: x[1] - x[0], reverse=True)
+                    
+                    # Sub-segmenting & outlier filtering to eliminate cross-talk contamination
                     spk_embeds = []
+                    spk_scored_slices = []
                     total_dur = 0.0
+                    
                     for c_start, c_end in chunks:
                         dur = c_end - c_start
                         if dur < 1.0: continue
                         
-                        s_samp = int(c_start * SAMPLE_RATE)
-                        e_samp = int(c_end * SAMPLE_RATE)
-                        c_audio = audio[s_samp:e_samp]
-                        t_chunk = torch.from_numpy(c_audio).unsqueeze(0)
-                        
-                        try:
-                            emb = inference({"waveform": t_chunk, "sample_rate": SAMPLE_RATE})
-                            spk_embeds.append(emb)
-                            total_dur += dur
-                            if total_dur > 20.0: break
-                        except Exception as e:
-                            pass
+                        # Break long chunks into 2.0s slices with 1.0s hop to catch single-voice sub-segments
+                        slice_windows = []
+                        if dur > 3.0:
+                            curr_s = c_start
+                            while curr_s + 1.5 <= c_end:
+                                slice_windows.append((curr_s, min(curr_s + 2.0, c_end)))
+                                curr_s += 1.0
+                        else:
+                            slice_windows.append((c_start, c_end))
                             
-                    if spk_embeds:
-                        avg_emb = np.mean(spk_embeds, axis=0)
+                        for s_start, s_end in slice_windows:
+                            s_dur = s_end - s_start
+                            s_samp = int(s_start * SAMPLE_RATE)
+                            e_samp = int(s_end * SAMPLE_RATE)
+                            c_audio = audio[s_samp:e_samp]
+                            t_chunk = torch.from_numpy(c_audio).unsqueeze(0)
+                            
+                            try:
+                                emb = inference({"waveform": t_chunk, "sample_rate": SAMPLE_RATE})
+                                
+                                slice_best_score = -1.0
+                                slice_best_name = None
+                                for lib_name, lib_emb in library_models.items():
+                                    sim = 1.0 - cosine(emb.flatten(), lib_emb.flatten())
+                                    if sim > slice_best_score:
+                                        slice_best_score = sim
+                                        slice_best_name = lib_name
+                                        
+                                spk_embeds.append(emb)
+                                spk_scored_slices.append({
+                                    "emb": emb,
+                                    "best_name": slice_best_name,
+                                    "best_score": slice_best_score,
+                                    "start": s_start,
+                                    "end": s_end
+                                })
+                                total_dur += s_dur
+                                if total_dur > 20.0: break
+                            except Exception:
+                                pass
+                        if total_dur > 20.0: break
+                            
+                    if spk_scored_slices:
+                        # Check for majority consensus across slices to filter out cross-talk outliers
+                        votes = {}
+                        for s in spk_scored_slices:
+                            if s["best_score"] > 0.85 and s["best_name"]:
+                                votes[s["best_name"]] = votes.get(s["best_name"], 0) + 1
+                                
+                        consensus_name = None
+                        if votes:
+                            top_voted = max(votes.items(), key=lambda x: x[1])
+                            if top_voted[1] >= max(1, len(spk_scored_slices) // 3):
+                                consensus_name = top_voted[0]
+                                
+                        # Use only pure matching embeddings when averaging
+                        if consensus_name:
+                            pure_embeds = [s["emb"] for s in spk_scored_slices if s["best_name"] == consensus_name and s["best_score"] > 0.75]
+                            avg_emb = np.mean(pure_embeds, axis=0) if pure_embeds else np.mean(spk_embeds, axis=0)
+                        else:
+                            avg_emb = np.mean(spk_embeds, axis=0)
+                            
                         best_match = None
                         best_score = -1.0
                         for lib_name, lib_emb in library_models.items():
@@ -693,7 +794,7 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=50):
                                 best_score = sim
                                 best_match = lib_name
                                 
-                        if best_score > 0.90 and best_match:
+                        if best_score > 0.88 and best_match:
                             print(f"[Match] Reassigned {spk} -> {best_match} (Similarity: {round(best_score*100, 1)}%)")
                             speaker_mapping[spk] = best_match
                         else:
@@ -704,10 +805,17 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=50):
                             
                             print(f"\n[No Match] {spk} remains unknown ({best_str})")
                             
-                            best_chunk = chunks[0]
-                            st_samp = int(best_chunk[0] * SAMPLE_RATE)
-                            playback_dur = min(8.0, best_chunk[1] - best_chunk[0])
-                            en_samp = st_samp + int(playback_dur * SAMPLE_RATE)
+                            # Pick the cleanest audio slice for playback
+                            cleanest_slice = max(spk_scored_slices, key=lambda x: x["best_score"]) if spk_scored_slices else None
+                            if cleanest_slice:
+                                play_st = cleanest_slice["start"]
+                                play_en = cleanest_slice["end"]
+                            else:
+                                play_st = chunks[0][0]
+                                play_en = min(play_st + 6.0, chunks[0][1])
+                                
+                            st_samp = int(play_st * SAMPLE_RATE)
+                            en_samp = int(play_en * SAMPLE_RATE)
                             
                             playback_audio = audio[st_samp:en_samp]
                             temp_playback_file = "temp_playback.wav"
@@ -1002,7 +1110,7 @@ if __name__ == "__main__":
     # Standalone AI Refinement & Diff Options
     parser.add_argument("--refine", type=str, help="Run AI refinement and generate a diff on an existing markdown transcript.")
     parser.add_argument("--diff", nargs=2, metavar=('RAW_MD', 'REFINED_MD'), help="Compare two markdown transcripts and generate an AI diff report.")
-    parser.add_argument("--batch-size", type=int, default=50, help="Batch size (number of dialogue lines) per LLM request (default: 50).")
+    parser.add_argument("--batch-size", type=int, default=25, help="Batch size (number of dialogue lines) per LLM request (default: 25, auto-splits to 13/12 on failure).")
     parser.add_argument("--api-url", type=str, default=None, help="LLM API URL (default: http://localhost:1234/v1 or LLM_API_URL env var).")
     parser.add_argument("--no-llm", action="store_true", help="Skip local LLM (LM Studio) transcript refinement.")
     
