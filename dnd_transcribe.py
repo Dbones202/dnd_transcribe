@@ -45,6 +45,23 @@ from faster_whisper.tokenizer import Tokenizer
 
 # --- HELPER CLASSES & MONKEYPATCHING ---
 
+_CURRENT_LOG_CALLBACK = None
+_CURRENT_PROGRESS_CALLBACK = None
+
+def set_callbacks(log_cb=None, progress_cb=None):
+    """Set global callbacks for logging and progress tracking."""
+    global _CURRENT_LOG_CALLBACK, _CURRENT_PROGRESS_CALLBACK
+    _CURRENT_LOG_CALLBACK = log_cb
+    _CURRENT_PROGRESS_CALLBACK = progress_cb
+
+def report_progress(phase: str, percent: float, message: str = ""):
+    """Report progress to active callback if registered."""
+    if _CURRENT_PROGRESS_CALLBACK:
+        try:
+            _CURRENT_PROGRESS_CALLBACK(phase, percent, message)
+        except Exception:
+            pass
+
 class WindowsSleepPreventer:
     """Context manager to prevent Windows from sleeping during execution."""
     ES_CONTINUOUS = 0x80000000
@@ -77,11 +94,16 @@ class TqdmList(list):
     def __init__(self, iterable, desc, unit="seg"):
         super().__init__(iterable)
         self._tqdm = tqdm(total=len(self), desc=desc, unit=unit)
+        self._count = 0
+        self._total = len(self)
 
     def __iter__(self):
         for item in super().__iter__():
             yield item
             self._tqdm.update(1)
+            self._count += 1
+            if self._total > 0:
+                report_progress("Alignment", (self._count / self._total) * 100.0, f"Aligning segment {self._count}/{self._total}")
         self._tqdm.close()
 
 def custom_transcribe(
@@ -120,6 +142,7 @@ def custom_transcribe(
 
     # Show VAD progress? It's usually fast, but let's just do the main loop.
     print("Performing VAD...")
+    report_progress("Transcription", 0.0, "Performing Voice Activity Detection (VAD)...")
     vad_segments = self.vad_model({"waveform": waveform, "sample_rate": SAMPLE_RATE})
     vad_segments = merge_chunks(
         vad_segments,
@@ -150,16 +173,6 @@ def custom_transcribe(
 
     if self.suppress_numerals:
         previous_suppress_tokens = self.options.suppress_tokens
-        # We need to access the module-level function found in asr.py
-        # Since we are not in asr.py, we have to duplicate logic or import it.
-        # simpler to just assume we don't need to suppress numerals for this specific user case
-        # or we can import it if it was exported. It's not exported by default.
-        # Let's skip the suppression logic for now or implement a dummy if needed?
-        # The user's code just calls load_model -> scribe, likely default options.
-        # Checking source of asr.py: find_numeral_symbol_tokens is defined at module level.
-        # We can implement it here if needed or just skip it if user doesn't use it.
-        # Let's import it from the internal if possible, or copy it.
-        # Copying it for safety:
         def find_numeral_symbol_tokens(tokenizer):
             numeral_symbol_tokens = []
             for i in range(tokenizer.eot):
@@ -170,7 +183,6 @@ def custom_transcribe(
             return numeral_symbol_tokens
 
         numeral_symbol_tokens = find_numeral_symbol_tokens(self.tokenizer)
-        # logger.info("Suppressing numeral and symbol tokens")
         new_suppressed_tokens = numeral_symbol_tokens + self.options.suppress_tokens
         new_suppressed_tokens = list(set(new_suppressed_tokens))
         self.options = replace(self.options, suppress_tokens=new_suppressed_tokens)
@@ -183,6 +195,8 @@ def custom_transcribe(
     with tqdm(total=total_segments, unit="seg", desc="Transcribing") as pbar:
         for idx, out in enumerate(self.__call__(data(audio, vad_segments), batch_size=batch_size, num_workers=num_workers)):
             pbar.update(1)
+            if total_segments > 0:
+                report_progress("Transcription", ((idx + 1) / total_segments) * 100.0, f"Transcribing segment {idx+1}/{total_segments}")
             
             text = out['text']
             if batch_size in [0, 1, None]:
@@ -222,8 +236,16 @@ def log_metric(message):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_entry = f"[{timestamp}] {message}"
     print(log_entry) # Also print to console
-    with open(LOG_FILE, "a") as f:
-        f.write(log_entry + "\n")
+    if _CURRENT_LOG_CALLBACK:
+        try:
+            _CURRENT_LOG_CALLBACK(log_entry)
+        except Exception:
+            pass
+    try:
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(log_entry + "\n")
+    except Exception:
+        pass
 
 class Timer:
     def __init__(self, name):
@@ -437,8 +459,9 @@ def _process_chunk_adaptive(
 
 def refine_transcript_with_llm(
     formatted_lines: List[str], 
-    api_url: str = None,
-    batch_size: int = 25
+    api_url: str = None, 
+    batch_size: int = 25, 
+    progress_cb = None
 ) -> tuple[List[str], dict]:
     """
     Optional post-processing pass using local LLM (e.g. Gemma / Llama via LM Studio REST API)
@@ -504,6 +527,13 @@ def refine_transcript_with_llm(
         chunk = formatted_lines[i:i + batch_size]
         batch_label = f"{batch_num}/{total_batches}"
         
+        pct = ((batch_num - 1) / max(1, total_batches)) * 100.0
+        msg = f"Processing LLM batch {batch_label} ({len(chunk)} lines)..."
+        if progress_cb:
+            progress_cb("LLM Refinement", pct, msg)
+        else:
+            report_progress("LLM Refinement", pct, msg)
+        
         chunk_refined, s_count, f_count = _process_chunk_adaptive(chunk, endpoint, system_prompt, batch_label)
         refined_lines.extend(chunk_refined)
         stats['completed'] += s_count
@@ -515,18 +545,23 @@ def refine_transcript_with_llm(
 def refine_existing_transcript(
     md_path: str, 
     api_url: str = None, 
-    batch_size: int = 25
+    batch_size: int = 25,
+    progress_cb = None,
+    log_cb = None
 ):
     """
     Standalone function to refine an existing raw markdown transcript file,
     produce a refined version, and generate a diff/evaluation report.
     """
     import re
+    if log_cb or progress_cb:
+        set_callbacks(log_cb, progress_cb)
+
     if not os.path.exists(md_path):
-        print(f"Error: Transcript file '{md_path}' not found.")
+        log_metric(f"Error: Transcript file '{md_path}' not found.")
         return
         
-    print(f"\n--- Loading Transcript: {md_path} ---")
+    log_metric(f"\n--- Loading Transcript: {md_path} ---")
     headers = []
     dialogue_lines = []
     pattern = re.compile(r'^\[\d{1,2}:\d{2}:\d{2} - \d{1,2}:\d{2}:\d{2}\]')
@@ -540,10 +575,10 @@ def refine_existing_transcript(
                 headers.append(stripped)
                 
     if not dialogue_lines:
-        print("Error: No timestamped dialogue lines found in the file.")
+        log_metric("Error: No timestamped dialogue lines found in the file.")
         return
         
-    print(f"Found {len(dialogue_lines)} dialogue lines to refine.")
+    log_metric(f"Found {len(dialogue_lines)} dialogue lines to refine.")
     
     base_name = os.path.splitext(os.path.basename(md_path))[0]
     # Strip existing _raw or _session_log suffixes for clean naming
@@ -554,7 +589,7 @@ def refine_existing_transcript(
     diff_path = os.path.join(out_dir, f"{clean_base}_ai_diff.md")
     
     start_time = time.time()
-    refined_lines, stats = refine_transcript_with_llm(dialogue_lines, api_url=api_url, batch_size=batch_size)
+    refined_lines, stats = refine_transcript_with_llm(dialogue_lines, api_url=api_url, batch_size=batch_size, progress_cb=progress_cb)
     duration_str = str(datetime.timedelta(seconds=int(time.time() - start_time)))
     
     # Save refined transcript
@@ -569,10 +604,10 @@ def refine_existing_transcript(
         for line in refined_lines:
             f.write(f"{line}  \n")
             
-    print(f"Refined transcript saved to: {refined_path}")
+    log_metric(f"Refined transcript saved to: {refined_path}")
     
     # Generate Diff Report
-    generate_ai_diff(
+    diff_results = generate_ai_diff(
         raw_lines=dialogue_lines,
         refined_lines=refined_lines,
         diff_output_path=diff_path,
@@ -580,8 +615,31 @@ def refine_existing_transcript(
         duration_str=duration_str,
         batch_stats=stats
     )
+    report_progress("Complete", 100.0, "AI Refinement completed successfully!")
+    return {
+        "refined_path": refined_path,
+        "diff_path": diff_path,
+        "stats": stats,
+        "diff_results": diff_results,
+        "duration": duration_str
+    }
 
-def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
+def run_dnd_session(
+    audio_path=None, 
+    skip_llm=False, 
+    batch_size=25, 
+    whisper_batch_size=BATCH_SIZE,
+    device_diarize=None, 
+    normalize_audio=True, 
+    api_url=None, 
+    progress_cb=None, 
+    log_cb=None,
+    speaker_identify_cb=None,
+    cancellation_token=None
+):
+    if log_cb or progress_cb:
+        set_callbacks(log_cb, progress_cb)
+
     overall_timer = Timer("Total Session")
     overall_timer.__enter__() # Manually start total timer
 
@@ -593,20 +651,18 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
     file_path = file_path.strip('"\'')
 
     if not file_path or not os.path.exists(file_path):
-        print(f"File not found: '{file_path}'")
+        log_metric(f"File not found: '{file_path}'")
         return
 
-    print(f"\n--- Auto-detecting Speaker IDs (SPEAKER_00, SPEAKER_01, etc.) ---")
-    print(f"You will be prompted to identify unknown speakers interactively.")
-
-    # Normalization (Standard)
-    normalize_audio = True
+    log_metric(f"\n--- Auto-detecting Speaker IDs (SPEAKER_00, SPEAKER_01, etc.) ---")
+    log_metric(f"You will be prompted to identify unknown speakers interactively.")
 
     # Diarization Device Prompt (Diarization on CPU is only needed as a fallback for VRAM/CUDA limits)
-    run_on_cpu = input("Run Diarization on CPU instead of GPU? (Only recommended if you experience GPU/CUDA errors) [y/N]: ").strip().lower() == 'y'
-    device_diarize = "cpu" if run_on_cpu else DEVICE_OTHER
+    if device_diarize is None:
+        run_on_cpu = input("Run Diarization on CPU instead of GPU? (Only recommended if you experience GPU/CUDA errors) [y/N]: ").strip().lower() == 'y'
+        device_diarize = "cpu" if run_on_cpu else DEVICE_OTHER
     
-    print(f"\n--- Processing Locally on NVIDIA GPU ---")
+    log_metric(f"\n--- Processing Locally on NVIDIA GPU ---")
 
     # 0. Preprocess Audio (Dynamic Normalization via FFmpeg)
     temp_file_path = None
@@ -614,7 +670,8 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
     
     if normalize_audio:
         temp_file_path = os.path.splitext(file_path)[0] + "_normalizedTemp.wav"
-        print("\n--- Preprocessing Audio (Dynamic Normalization) ---")
+        log_metric("\n--- Preprocessing Audio (Dynamic Normalization) ---")
+        report_progress("Normalization", 0.0, "Normalizing audio with FFmpeg (dynaudnorm)...")
         with Timer("Audio Normalization") as t_norm:
             ffmpeg_cmd = [
                 "ffmpeg", "-y", "-i", file_path, 
@@ -627,17 +684,18 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
                 process_file_path = temp_file_path
                 log_metric("Audio normalization complete.")
             except FileNotFoundError:
-                print("\n[ERROR] FFmpeg not found. Skipping normalization.")
-                print("Please install FFmpeg and add it to your system PATH to use this feature.\n")
+                log_metric("\n[ERROR] FFmpeg not found. Skipping normalization.")
+                log_metric("Please install FFmpeg and add it to your system PATH to use this feature.\n")
                 process_file_path = file_path
                 temp_file_path = None
             except subprocess.CalledProcessError as e:
-                print(f"\n[ERROR] FFmpeg failed during normalization: {e}")
-                print("Skipping normalization.\n")
+                log_metric(f"\n[ERROR] FFmpeg failed during normalization: {e}")
+                log_metric("Skipping normalization.\n")
                 process_file_path = file_path
                 temp_file_path = None
 
     # 1. Transcribe
+    report_progress("Transcription", 0.0, "Loading WhisperX model (large-v3-turbo)...")
     with Timer("Loading & Transcription") as t_transcribe:
         model = whisperx.load_model("large-v3-turbo", DEVICE_ASR, compute_type=COMPUTE_TYPE, language="en")
         audio = whisperx.load_audio(process_file_path)
@@ -645,13 +703,15 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
         audio_duration = len(audio) / SAMPLE_RATE
         log_metric(f"Audio Duration: {str(datetime.timedelta(seconds=int(audio_duration)))}")
         
-        result = model.transcribe(audio, batch_size=BATCH_SIZE, language="en")
+        actual_whisper_batch = whisper_batch_size or BATCH_SIZE
+        result = model.transcribe(audio, batch_size=actual_whisper_batch, language="en")
         
     del model
     gc.collect()
     torch.cuda.empty_cache()
     
     # 2. Align & Diarize
+    report_progress("Alignment", 0.0, "Aligning transcript words and timestamps...")
     with Timer("Alignment") as t_align:
         model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=DEVICE_OTHER)
         result["segments"] = TqdmList(result["segments"], desc="Aligning", unit="seg")
@@ -661,11 +721,12 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
     gc.collect()
     torch.cuda.empty_cache()
     
-    print("\n--- Diarizing (Progress bar unavailable for this step) ---")
+    log_metric("\n--- Diarizing (Progress bar unavailable for this step) ---")
+    report_progress("Diarization", 50.0, "Running PyAnnote speaker diarization pipeline...")
 
     with Timer("Diarization") as t_diarize:
         if device_diarize == "cpu":
-            print(">> Running Diarization on CPU...")
+            log_metric(">> Running Diarization on CPU...")
         diarize_model = whisperx.diarize.DiarizationPipeline(token=HF_TOKEN, device=device_diarize)
         diarize_segments = diarize_model(audio)
         
@@ -674,11 +735,12 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
     torch.cuda.empty_cache()
     
     # 3. Final Merge & Voice Identification
+    report_progress("Voice Identification", 70.0, "Matching speakers against voice library...")
     llm_duration_str = "N/A"
     with Timer("Merge & Save") as t_merge:
         final_result = whisperx.assign_word_speakers(diarize_segments, result)
         
-        print("\n--- Identifying Speakers vs Voice Library ---")
+        log_metric("\n--- Identifying Speakers vs Voice Library ---")
         try:
             import glob
             from scipy.spatial.distance import cosine
@@ -693,7 +755,7 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
                     name = os.path.splitext(os.path.basename(vf))[0]
                     library_models[name] = np.load(vf)
                     
-                print(f"Loaded {len(library_models)} voices from voice_library/")
+                log_metric(f"Loaded {len(library_models)} voices from voice_library/")
                 
                 emb_model = Model.from_pretrained("pyannote/wespeaker-voxceleb-resnet34-LM", use_auth_token=hf_token_lib)
                 if not emb_model:
@@ -795,7 +857,7 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
                                 best_match = lib_name
                                 
                         if best_score > 0.88 and best_match:
-                            print(f"[Match] Reassigned {spk} -> {best_match} (Similarity: {round(best_score*100, 1)}%)")
+                            log_metric(f"[Match] Reassigned {spk} -> {best_match} (Similarity: {round(best_score*100, 1)}%)")
                             speaker_mapping[spk] = best_match
                         else:
                             if best_match and best_score > 0.40:
@@ -803,7 +865,7 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
                             else:
                                 best_str = f"Best was {best_match} at {round(best_score*100, 1)}%" if best_match else "No library match"
                             
-                            print(f"\n[No Match] {spk} remains unknown ({best_str})")
+                            log_metric(f"\n[No Match] {spk} remains unknown ({best_str})")
                             
                             # Pick the cleanest audio slice for playback
                             cleanest_slice = max(spk_scored_slices, key=lambda x: x["best_score"]) if spk_scored_slices else None
@@ -818,43 +880,76 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
                             en_samp = int(play_en * SAMPLE_RATE)
                             
                             playback_audio = audio[st_samp:en_samp]
-                            temp_playback_file = "temp_playback.wav"
+                            temp_playback_file = f"temp_playback_{spk}.wav"
                             
                             scaled_audio = np.int16(playback_audio * 32767)
                             wavfile.write(temp_playback_file, SAMPLE_RATE, scaled_audio)
                             
-                            while True:
-                                print(f"Playing audio sample for {spk}...")
-                                winsound.PlaySound(temp_playback_file, winsound.SND_FILENAME)
-                                
-                                user_input = input(f"Who is speaking? (Type name, press Enter to keep as {spk}, type 'replay' to listen again): ").strip()
-                                
-                                if user_input.lower() == 'replay':
-                                    continue
-                                elif user_input == "":
-                                    print(f"Leaving as {spk}")
-                                    break
-                                else:
-                                    safe_name = "".join([c for c in user_input if c.isalpha() or c.isdigit()]).rstrip()
+                            # If GUI callback is provided, invoke it
+                            if speaker_identify_cb:
+                                chosen_name = speaker_identify_cb(
+                                    spk_tag=spk,
+                                    audio_clip_path=temp_playback_file,
+                                    best_match=best_match,
+                                    best_score=best_score,
+                                    library_names=list(library_models.keys()),
+                                    duration=total_dur
+                                )
+                                if chosen_name:
+                                    safe_name = "".join([c for c in chosen_name if c.isalpha() or c.isdigit()]).rstrip()
                                     speaker_mapping[spk] = safe_name
-                                    print(f"Assigned {spk} -> {safe_name}")
+                                    log_metric(f"Assigned {spk} -> {safe_name}")
                                     
                                     out_file = os.path.join("voice_library", f"{safe_name}.npy")
                                     os.makedirs("voice_library", exist_ok=True)
                                     
                                     if os.path.exists(out_file):
-                                        print(f"  -> Found existing profile for {safe_name}. Refining voice print...")
+                                        log_metric(f"  -> Found existing profile for {safe_name}. Refining voice print...")
                                         old_embedding = np.load(out_file)
                                         avg_emb = (old_embedding + avg_emb) / 2.0
                                         
                                     np.save(out_file, avg_emb)
-                                    print(f"  -> Saved {out_file} (Harvested {round(total_dur, 1)} seconds of speech)")
-                                    
+                                    log_metric(f"  -> Saved {out_file} (Harvested {round(total_dur, 1)} seconds of speech)")
                                     library_models[safe_name] = avg_emb
-                                    break
+                                else:
+                                    log_metric(f"Leaving as {spk}")
+                            else:
+                                # CLI interactive prompt
+                                while True:
+                                    print(f"Playing audio sample for {spk}...")
+                                    winsound.PlaySound(temp_playback_file, winsound.SND_FILENAME)
                                     
+                                    user_input = input(f"Who is speaking? (Type name, press Enter to keep as {spk}, type 'replay' to listen again): ").strip()
+                                    
+                                    if user_input.lower() == 'replay':
+                                        continue
+                                    elif user_input == "":
+                                        print(f"Leaving as {spk}")
+                                        break
+                                    else:
+                                        safe_name = "".join([c for c in user_input if c.isalpha() or c.isdigit()]).rstrip()
+                                        speaker_mapping[spk] = safe_name
+                                        print(f"Assigned {spk} -> {safe_name}")
+                                        
+                                        out_file = os.path.join("voice_library", f"{safe_name}.npy")
+                                        os.makedirs("voice_library", exist_ok=True)
+                                        
+                                        if os.path.exists(out_file):
+                                            print(f"  -> Found existing profile for {safe_name}. Refining voice print...")
+                                            old_embedding = np.load(out_file)
+                                            avg_emb = (old_embedding + avg_emb) / 2.0
+                                            
+                                        np.save(out_file, avg_emb)
+                                        print(f"  -> Saved {out_file} (Harvested {round(total_dur, 1)} seconds of speech)")
+                                        
+                                        library_models[safe_name] = avg_emb
+                                        break
+                                        
                             if os.path.exists(temp_playback_file):
-                                os.remove(temp_playback_file)
+                                try:
+                                    os.remove(temp_playback_file)
+                                except Exception:
+                                    pass
                             
                 for seg in final_result["segments"]:
                     spk = seg.get("speaker", "UNKNOWN")
@@ -865,12 +960,12 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
                 gc.collect()
                 torch.cuda.empty_cache()
             else:
-                print("No voices found in voice_library/. Skipping identification.")
+                log_metric("No voices found in voice_library/. Skipping identification.")
                 
         except Exception as e:
-            print(f"Error during speaker identification: {e}")
+            log_metric(f"Error during speaker identification: {e}")
             
-        print("\n--- Writing Markdown ---")
+        log_metric("\n--- Writing Markdown ---")
         orig_name = os.path.basename(process_file_path)
         if temp_file_path and process_file_path == temp_file_path:
             orig_name = os.path.basename(file_path)
@@ -898,7 +993,7 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
             for line in raw_lines:
                 f.write(f"{line}  \n")
                 
-        print(f"\n[Output] Raw transcript saved to: {raw_output_filename}")
+        log_metric(f"\n[Output] Raw transcript saved to: {raw_output_filename}")
         
         # Also write the default session_log.md with raw content initially
         with open(standard_output_filename, "w", encoding="utf-8") as f:
@@ -910,8 +1005,9 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
 
         # 2. Optional LLM Refinement Pass
         if not skip_llm:
+            report_progress("LLM Refinement", 80.0, "Refining transcript with Local LLM (LM Studio)...")
             llm_start_time = time.time()
-            refined_lines, stats = refine_transcript_with_llm(raw_lines, batch_size=batch_size)
+            refined_lines, stats = refine_transcript_with_llm(raw_lines, api_url=api_url, batch_size=batch_size, progress_cb=progress_cb)
             llm_duration_str = str(datetime.timedelta(seconds=int(time.time() - llm_start_time)))
             log_metric(f"LLM Refinement finished in {llm_duration_str}")
             
@@ -923,13 +1019,13 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
                 f.write(f"> Refined with Local LLM in {llm_duration_str}\n\n")
                 for line in refined_lines:
                     f.write(f"{line}  \n")
-            print(f"[Output] Refined transcript saved to: {refined_output_filename}")
+            log_metric(f"[Output] Refined transcript saved to: {refined_output_filename}")
             
             # Update main session_log.md to the refined content
             with open(standard_output_filename, "w", encoding="utf-8") as f:
                 f.write(f"# D&D Session Transcript\n\n")
                 f.write(f"> Processed on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
-                f.write(f"> Audio Duration: {str(datetime.timedelta(seconds=int(audio_duration)))}\n\n")
+                f.write(f"> Audio Duration: {str(datetime.timedelta(seconds=int(audio_duration)))}\n")
                 for line in refined_lines:
                     f.write(f"{line}  \n")
                     
@@ -945,28 +1041,42 @@ def run_dnd_session(audio_path=None, skip_llm=False, batch_size=25):
 
     # 4. Cleanup
     if temp_file_path and os.path.exists(temp_file_path):
-        os.remove(temp_file_path)
-        log_metric("Temporary normalized audio file removed.")
+        try:
+            os.remove(temp_file_path)
+            log_metric("Temporary normalized audio file removed.")
+        except Exception:
+            pass
     overall_timer.__exit__(None, None, None)
 
-    print("\n" + "="*50)
-    print(f"{'Phase':<25} | {'Duration':<15}")
-    print("-" * 50)
-    print(f"{'Transcription':<25} | {t_transcribe.format_duration():<15}")
-    print(f"{'Alignment':<25} | {t_align.format_duration():<15}")
-    print(f"{'Diarization':<25} | {t_diarize.format_duration():<15}")
-    print(f"{'LLM Refinement':<25} | {llm_duration_str:<15}")
-    print(f"{'Merge & Save':<25} | {t_merge.format_duration():<15}")
-    print("-" * 50)
-    print(f"{'Total Runtime':<25} | {overall_timer.format_duration():<15}")
-    print("="*50 + "\n")
+    log_metric("\n" + "="*50)
+    log_metric(f"{'Phase':<25} | {'Duration':<15}")
+    log_metric("-" * 50)
+    log_metric(f"{'Transcription':<25} | {t_transcribe.format_duration():<15}")
+    log_metric(f"{'Alignment':<25} | {t_align.format_duration():<15}")
+    log_metric(f"{'Diarization':<25} | {t_diarize.format_duration():<15}")
+    log_metric(f"{'LLM Refinement':<25} | {llm_duration_str:<15}")
+    log_metric(f"{'Merge & Save':<25} | {t_merge.format_duration():<15}")
+    log_metric("-" * 50)
+    log_metric(f"{'Total Runtime':<25} | {overall_timer.format_duration():<15}")
+    log_metric("="*50 + "\n")
 
-    print(f"\n[Success] Transcripts and logs generated:")
-    print(f"  -> Raw Transcript:     {raw_output_filename}")
+    log_metric(f"\n[Success] Transcripts and logs generated:")
+    log_metric(f"  -> Raw Transcript:     {raw_output_filename}")
     if not skip_llm:
-        print(f"  -> Refined Transcript: {refined_output_filename}")
-        print(f"  -> AI Diff Report:     {diff_output_filename}")
-    print(f"  -> Active Session Log: {standard_output_filename}")
+        log_metric(f"  -> Refined Transcript: {refined_output_filename}")
+        log_metric(f"  -> AI Diff Report:     {diff_output_filename}")
+    log_metric(f"  -> Active Session Log: {standard_output_filename}")
+    
+    report_progress("Complete", 100.0, "Transcription pipeline finished successfully!")
+
+    return {
+        "raw_path": raw_output_filename,
+        "refined_path": refined_output_filename if not skip_llm else None,
+        "diff_path": diff_output_filename if not skip_llm else None,
+        "standard_path": standard_output_filename,
+        "audio_duration": audio_duration,
+        "total_duration": overall_timer.format_duration()
+    }
 
 
 # --- VOICE HARVESTING (LIBRARY CREATION) ---
@@ -1003,24 +1113,28 @@ def parse_markdown_for_speakers(md_path):
                 speaker_segments[speaker].append((start_sec, end_sec))
     return speaker_segments
 
-def train_voices(md_path, audio_path):
+def train_voices(md_path, audio_path, progress_cb=None, log_cb=None):
+    if log_cb or progress_cb:
+        set_callbacks(log_cb, progress_cb)
+
     if not os.path.exists(md_path) or not os.path.exists(audio_path):
-        print("Error: Markdown or audio file not found.")
-        return
+        log_metric("Error: Markdown or audio file not found.")
+        return {"success": False, "error": "Markdown or audio file not found."}
         
     os.makedirs("voice_library", exist_ok=True)
     speaker_segments = parse_markdown_for_speakers(md_path)
     
     if not speaker_segments:
-        print("No valid named speakers found. Did you edit the SPEAKER_XX tags and leave the timestamps?")
-        return
+        log_metric("No valid named speakers found. Did you edit the SPEAKER_XX tags and leave the timestamps?")
+        return {"success": False, "error": "No valid named speakers found in transcript."}
         
-    print(f"Found {len(speaker_segments)} unique named speakers.")
+    log_metric(f"Found {len(speaker_segments)} unique named speakers.")
+    report_progress("Voice Training", 0.0, "Loading PyAnnote Embedding Model...")
     
     HF_TOKEN = os.getenv("HF_TOKEN")
     from pyannote.audio import Model, Inference
     
-    print("Loading PyAnnote Embedding Model...")
+    log_metric("Loading PyAnnote Embedding Model...")
     model = Model.from_pretrained("pyannote/wespeaker-voxceleb-resnet34-LM", use_auth_token=HF_TOKEN)
     if not model:
         model = Model.from_pretrained("pyannote/embedding", use_auth_token=HF_TOKEN)
@@ -1029,11 +1143,17 @@ def train_voices(md_path, audio_path):
     model.to(device)
     inference = Inference(model, window="whole")
     
-    print(f"Loading Audio {audio_path}...")
+    log_metric(f"Loading Audio {audio_path}...")
+    report_progress("Voice Training", 20.0, f"Loading Audio {os.path.basename(audio_path)}...")
     audio_data = whisperx.load_audio(audio_path)
     
-    for speaker, segments in speaker_segments.items():
-        print(f"\nProcessing embeddings for: {speaker}")
+    total_spks = len(speaker_segments)
+    harvested = []
+    
+    for idx, (speaker, segments) in enumerate(speaker_segments.items()):
+        pct = 20.0 + ((idx / total_spks) * 75.0)
+        report_progress("Voice Training", pct, f"Harvesting voice profile for {speaker} ({idx+1}/{total_spks})...")
+        log_metric(f"\nProcessing embeddings for: {speaker}")
         speaker_embeddings = []
         total_duration = 0.0
         segments.sort(key=lambda x: x[1] - x[0], reverse=True)
@@ -1060,16 +1180,30 @@ def train_voices(md_path, audio_path):
             safe_name = "".join([c for c in speaker if c.isalpha() or c.isdigit()]).rstrip()
             out_file = os.path.join("voice_library", f"{safe_name}.npy")
             
-            if os.path.exists(out_file):
-                print(f"  -> Found existing profile for {speaker}. Refining voice print...")
+            is_refinement = os.path.exists(out_file)
+            if is_refinement:
+                log_metric(f"  -> Found existing profile for {speaker}. Refining voice print...")
                 old_embedding = np.load(out_file)
                 # Average the old and new embeddings to refine over time
                 avg_embedding = (old_embedding + avg_embedding) / 2.0
                 
             np.save(out_file, avg_embedding)
-            print(f"  -> Saved {out_file} (Harvested {round(total_duration, 1)} seconds)")
+            log_metric(f"  -> Saved {out_file} (Harvested {round(total_duration, 1)} seconds)")
+            harvested.append({
+                "speaker": safe_name,
+                "duration": round(total_duration, 1),
+                "is_refined": is_refinement,
+                "path": out_file
+            })
         else:
-            print(f"  -> Failed to harvest audio for {speaker}")
+            log_metric(f"  -> Failed to harvest audio for {speaker}")
+            
+    report_progress("Complete", 100.0, f"Successfully harvested {len(harvested)} voice profiles!")
+    return {
+        "success": True,
+        "harvested": harvested,
+        "total_speakers": len(speaker_segments)
+    }
 
 
 def diff_two_transcripts(raw_md_path: str, refined_md_path: str, output_diff_path: str = None):

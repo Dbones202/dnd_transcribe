@@ -37,9 +37,26 @@ source venv/Scripts/activate
 
 ---
 
-## 🚀 Step 2: How to Run the Software (Transcription)
+## 🖥️ Graphical User Interface (GUI App)
 
-To start transcribing a D&D session recording:
+You can run the full transcription suite with a modern desktop GUI:
+
+```powershell
+python run_gui.py
+```
+
+### 🌟 GUI Features:
+- **🎙️ Transcription Studio**: Visual pipeline stepper, audio file browser, GPU/CPU toggles, normalization controls, LM Studio connection tester, and live colored terminal console.
+- **Interactive Speaker Identification**: Pops up an audio playback modal with replay controls, enrolled speaker dropdown, and name input.
+- **🤖 AI Refinement & Diff Viewer**: Standalone transcript refinement and side-by-side / line-by-line diff inspection table.
+- **🎓 Voice Library Manager**: Search, rename, or delete `.npy` voice models, and harvest voices from edited transcripts.
+- **⚙️ System Diagnostics**: Real-time inspection of CUDA GPU acceleration, VRAM, WhisperX, FFmpeg, Hugging Face Token, and LM Studio server status.
+
+---
+
+## 🚀 Step 2: How to Run via CLI (Terminal)
+
+To start transcribing a D&D session recording from the command line:
 
 1. **Place your recording** (e.g., `.wav`, `.mp3`) in the `audio_files/` directory.
 2. Run the main script with the `-a` / `--audio` flag (allows **Tab auto-completion** in PowerShell/Terminal):

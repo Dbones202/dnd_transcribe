@@ -1,11 +1,19 @@
 {
+  "E:\\GIT\\DnD\\dnd_gui.py": {
+    "mtime": 1787206430.8513267,
+    "hash": "eab3e917084aa6b5a2e11b5dcd789ed3"
+  },
   "E:\\GIT\\DnD\\dnd_transcribe.py": {
-    "mtime": 1786944670.751437,
-    "hash": "0d29b19b5fe416bff797141a7cab3302"
+    "mtime": 1787206275.6482127,
+    "hash": "7e4811f7818182f7244be9b6ebfa2204"
   },
   "E:\\GIT\\DnD\\extract_voices.py": {
     "mtime": 1771831075.783751,
     "hash": "2c234553f0ce7ad1bbcf105634fff03d"
+  },
+  "E:\\GIT\\DnD\\run_gui.py": {
+    "mtime": 1787206366.609511,
+    "hash": "e0973ca79f7e035c40b6c4651e58f1a5"
   },
   "E:\\GIT\\DnD\\test_embed.py": {
     "mtime": 1771831025.6762908,
@@ -16,24 +24,24 @@
     "hash": "7164ff99b7b580653ec18183206e6a4d"
   },
   "E:\\GIT\\DnD\\AGENTS.md": {
-    "mtime": 1786927539.712219,
-    "hash": "215d3f19296892ddefbc33aa0f521b3b"
+    "mtime": 1786944773.766179,
+    "hash": "ff9f5ec147447453edddca9c7baf0d11"
   },
   "E:\\GIT\\DnD\\CHANGELOG.md": {
-    "mtime": 1786927460.3192775,
-    "hash": "9ddbd968dfda96fccf9ae9bbfd772351"
+    "mtime": 1787206461.4047546,
+    "hash": "c0a1d69e678bb6e598e6c3c989f8e762"
   },
   "E:\\GIT\\DnD\\CLAUDE.md": {
-    "mtime": 1786927539.712219,
-    "hash": "215d3f19296892ddefbc33aa0f521b3b"
+    "mtime": 1786944773.766179,
+    "hash": "ff9f5ec147447453edddca9c7baf0d11"
   },
   "E:\\GIT\\DnD\\diarize_sig.txt": {
     "mtime": 1771824855.2440524,
     "hash": "3983bc8d2cc48813173875a543fa877e"
   },
   "E:\\GIT\\DnD\\README.md": {
-    "mtime": 1786925648.489871,
-    "hash": "204c3587ab2f5720c4fb369ef2ab0ccd"
+    "mtime": 1787206469.769433,
+    "hash": "6bbf90327d9416ee8ed4ef83ec7668f7"
   },
   "E:\\GIT\\DnD\\transcripts\\03_14_session_log.md": {
     "mtime": 1773626888.2526333,
@@ -76,7 +84,7 @@
     "hash": "83e1069fc2766069fdf6be3a678b70d2"
   },
   "E:\\GIT\\DnD\\transcripts\\Aug 15 2026_session_log_refined.md": {
-    "mtime": 1786944434.0729992,
+    "mtime": 1786944841.358045,
     "hash": "e83e13d07de3ba5ad4f3a0ac6d4e48a1"
   },
   "E:\\GIT\\DnD\\transcripts\\bedlam_game_3_session_log.md": {
