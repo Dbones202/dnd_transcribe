@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-10-02
+
+### Added
+- **Donovan's Tool Bench Integration (`main.py`)**: Added standard module entry point adhering to `MODULE_DEVELOPER_GUIDE.md` for seamless process supervision, parameter passing, and dashboard execution.
+- **Line-Delimited JSON IPC**: Emits structured `status`, `progress` (dual-reporting `percent` [0-100] and `value` [0.0-1.0]), `log`, `result`, and `error` payloads with real-time stdout flushing.
+- **Interactive Speaker Identification Modal Support**: Implemented `prompt` IPC events and non-blocking `stdin` response parsing, allowing the Tool Bench web dashboard to prompt the user for unknown speaker names with audio clip previews.
+- **Standardized Task Dispatcher**:
+  - `transcribe-session`: Full pipeline execution with live stage progress, diarization, and optional LLM refinement.
+  - `refine-transcript`: Standalone markdown transcript refinement pass with side-by-side diff report generation.
+  - `voice-training`: Speaker embedding extraction and profile harvesting directly into `voice_library/`.
+  - `system-diagnostics`: Hardware and software environment verification (CUDA, PyTorch, FFmpeg, Hugging Face Token, voice profiles count, and LM Studio server/model connectivity).
+- **Cross-Module Task Compatibility Layer**: Provided friendly fallback dispatchers for sister-module task identifiers (e.g. `story-grabber`, `scene-reviewer`) to gracefully handle test harness invocations.
+
 ## [1.2.0] - 2026-08-20
 
 ### Added

@@ -54,6 +54,37 @@ python run_gui.py
 
 ---
 
+## 🧰 Donovan's Tool Bench Integration (`main.py`)
+
+This repository includes a standardized `main.py` entry point implementing the [Tool Bench Module Specification](MODULE_DEVELOPER_GUIDE.md). Donovan's Tool Bench supervises processes, passes parameters via CLI flags or `stdin`, and captures real-time progress, logs, interactive prompts, and results via line-delimited JSON IPC.
+
+### Running via Tool Bench Entry Point
+
+```powershell
+# Run system diagnostics
+python main.py system-diagnostics
+
+# Run full session transcription with JSON parameters
+python main.py transcribe-session --params '{"audio_path": "audio_files/session_1.wav", "skip_llm": false, "device_diarize": "cuda"}'
+
+# Or pipe parameters through stdin
+'{"transcript_path": "transcripts/session_raw.md", "batch_size": 25}' | python main.py refine-transcript
+
+# Extract and harvest voice models from an annotated transcript
+'{"transcript_path": "transcripts/session_refined.md", "audio_path": "audio_files/session_1.wav"}' | python main.py voice-training
+```
+
+### Supported Tool Bench Tasks
+
+| Task ID | Description | Key Parameters |
+|---|---|---|
+| `transcribe-session` | Full audio normalization, WhisperX transcription, PyAnnote diarization, interactive speaker prompts, and optional LLM refinement. | `audio_path`, `skip_llm`, `device_diarize`, `batch_size`, `whisper_batch_size`, `output_dir` |
+| `refine-transcript` | Standalone AI refinement of an existing markdown transcript, plus automated AI diff report. | `transcript_path`, `api_url`, `batch_size`, `generate_diff` |
+| `voice-training` | Extract speaker voice prints from edited transcript and audio waveform into `voice_library/`. | `transcript_path`, `audio_path`, `voice_library_dir` |
+| `system-diagnostics` | Probe PyTorch CUDA, GPU VRAM, FFmpeg PATH resolution, Hugging Face Token, voice profiles, and LM Studio server health. | `api_url` |
+
+---
+
 ## 🚀 Step 2: How to Run via CLI (Terminal)
 
 To start transcribing a D&D session recording from the command line:

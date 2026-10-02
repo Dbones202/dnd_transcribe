@@ -11,6 +11,10 @@
     "mtime": 1771831075.783751,
     "hash": "2c234553f0ce7ad1bbcf105634fff03d"
   },
+  "E:\\GIT\\DnD\\main.py": {
+    "mtime": 1790968568.5579493,
+    "hash": "ab00de908a3d44c7003d527ce407514b"
+  },
   "E:\\GIT\\DnD\\run_gui.py": {
     "mtime": 1787206366.609511,
     "hash": "e0973ca79f7e035c40b6c4651e58f1a5"
@@ -28,8 +32,8 @@
     "hash": "ff9f5ec147447453edddca9c7baf0d11"
   },
   "E:\\GIT\\DnD\\CHANGELOG.md": {
-    "mtime": 1787206461.4047546,
-    "hash": "c0a1d69e678bb6e598e6c3c989f8e762"
+    "mtime": 1790969864.8434327,
+    "hash": "9489fe41b77dc24923eeb8fdb983dc65"
   },
   "E:\\GIT\\DnD\\CLAUDE.md": {
     "mtime": 1786944773.766179,
@@ -39,13 +43,33 @@
     "mtime": 1771824855.2440524,
     "hash": "3983bc8d2cc48813173875a543fa877e"
   },
+  "E:\\GIT\\DnD\\MODULE_DEVELOPER_GUIDE.md": {
+    "mtime": 1790946208.4558585,
+    "hash": "e8ba6f1da22e83a49b89c0c4eb976c19"
+  },
   "E:\\GIT\\DnD\\README.md": {
-    "mtime": 1787206469.769433,
-    "hash": "6bbf90327d9416ee8ed4ef83ec7668f7"
+    "mtime": 1790969877.9525151,
+    "hash": "99bab2cd9c460240158e6f4f01ebfbde"
   },
   "E:\\GIT\\DnD\\transcripts\\03_14_session_log.md": {
     "mtime": 1773626888.2526333,
     "hash": "b9fae10ba11edd962b47fd396a52d8d1"
+  },
+  "E:\\GIT\\DnD\\transcripts\\08-22-nate_ai_diff.md": {
+    "mtime": 1787532022.5733569,
+    "hash": "8dd6f57387eaadb94ce44c1f4e7cd579"
+  },
+  "E:\\GIT\\DnD\\transcripts\\08-22-nate_session_log.md": {
+    "mtime": 1787532022.5164232,
+    "hash": "ea20c707da81dc1e5b15a07dc6c89160"
+  },
+  "E:\\GIT\\DnD\\transcripts\\08-22-nate_session_log_raw.md": {
+    "mtime": 1787517092.1930642,
+    "hash": "9a81c1a11ede30b0886e5cf7cb7a27cb"
+  },
+  "E:\\GIT\\DnD\\transcripts\\08-22-nate_session_log_refined.md": {
+    "mtime": 1787532022.5138838,
+    "hash": "e0f2b3a0504bd275af8dceb8627bbe6f"
   },
   "E:\\GIT\\DnD\\transcripts\\2-21_game_session_log.md": {
     "mtime": 1771827875.3271995,
@@ -118,6 +142,10 @@
   "E:\\GIT\\DnD\\transcripts\\may23-game_session_log.md": {
     "mtime": 1779664219.9106395,
     "hash": "de55f1aeddae09d5ab8f26c3751ed6c2"
+  },
+  "E:\\GIT\\DnD\\audio_files\\08-22-nate.wav": {
+    "mtime": 1787515870.333041,
+    "hash": "fa7638fec9d04d667f2cb8b97098c7f5"
   },
   "E:\\GIT\\DnD\\audio_files\\Aug 15 2026.wav": {
     "mtime": 1786925302.2109625,
