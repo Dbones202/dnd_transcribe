@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-10-14
+
+### Added
+- **Roleplay Voice / Sub-Persona Profiles**:
+  - Support for multi-persona voice prints per player (e.g., `Player (Persona)` or `Player__Persona` file stems), enabling distinct character voices for players and DMs without polluting base identities.
+  - Added dedicated Roleplay Voice / Persona input field in the GUI `SpeakerIdentifyModal`.
+  - Added `model_key_to_display` and `parse_speaker_choice` to seamlessly normalize and convert between display names and filenames.
+- **Best Guess (`bg`) Speaker Tagging**:
+  - Added "🟡 Best Guess (Don't Train)" option in the GUI modal and CLI (`bg` / `(bg)` flag) to assign speculative speaker names to segments while keeping them out of voice training.
+  - Voice harvesting routines in both `dnd_transcribe.py` and `extract_voices.py` automatically ignore best-guess annotations to maintain voice library purity.
+- **L2-Normalized Embedding & Weighted Profile Blending**:
+  - L2 unit-sphere vector normalization (`normalize_embedding`) prevents vector magnitude drift across PyAnnote extraction passes.
+  - Implemented 70/30 weighted historical blend (`0.7 * old + 0.3 * new`) for incremental profile refinement over successive sessions.
+- **Base64 Inline Audio Preview in Tool Bench (`main.py`)**:
+  - Encodes audio snippet previews to `data:audio/wav;base64,...` in speaker prompt payloads for reliable zero-configuration playback in web dashboards.
+- **Configurable Output Directory**:
+  - Added `-o` / `--output-dir` CLI parameter (with fallback to `TRANSCRIPTS_DIR` env variable) to route generated transcript files to custom destinations.
+
+### Changed
+- Improved Voice Library profile renaming in GUI to accept underscores (`_`) alongside alphanumeric characters.
+- Safeguarded file copy/move operations in `main.py` using `os.path.samefile` to avoid accidental self-overwrites.
+
 ## [1.3.0] - 2026-10-02
 
 ### Added

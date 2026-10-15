@@ -47,16 +47,16 @@ python run_gui.py
 
 ### 🌟 GUI Features:
 - **🎙️ Transcription Studio**: Visual pipeline stepper, audio file browser, GPU/CPU toggles, normalization controls, LM Studio connection tester, and live colored terminal console.
-- **Interactive Speaker Identification**: Pops up an audio playback modal with replay controls, enrolled speaker dropdown, and name input.
+- **Interactive Speaker Identification Modal**: Pops up an audio playback modal with replay controls, enrolled speaker dropdown, new speaker name input, optional **Roleplay Voice / Persona** field, **"Confirm & Train"**, and **"Best Guess (Don't Train)"** actions.
 - **🤖 AI Refinement & Diff Viewer**: Standalone transcript refinement and side-by-side / line-by-line diff inspection table.
-- **🎓 Voice Library Manager**: Search, rename, or delete `.npy` voice models, and harvest voices from edited transcripts.
+- **🎓 Voice Library Manager**: Search, rename (with alphanumeric and underscore support), or delete `.npy` voice models, and harvest voices from edited transcripts.
 - **⚙️ System Diagnostics**: Real-time inspection of CUDA GPU acceleration, VRAM, WhisperX, FFmpeg, Hugging Face Token, and LM Studio server status.
 
 ---
 
 ## 🧰 Donovan's Tool Bench Integration (`main.py`)
 
-This repository includes a standardized `main.py` entry point implementing the [Tool Bench Module Specification](MODULE_DEVELOPER_GUIDE.md). Donovan's Tool Bench supervises processes, passes parameters via CLI flags or `stdin`, and captures real-time progress, logs, interactive prompts, and results via line-delimited JSON IPC.
+This repository includes a standardized `main.py` entry point implementing the [Tool Bench Module Specification](MODULE_DEVELOPER_GUIDE.md). Donovan's Tool Bench supervises processes, passes parameters via CLI flags or `stdin`, and captures real-time progress, logs, interactive prompts (with base64 inline audio streaming for zero-config browser playback), and results via line-delimited JSON IPC.
 
 ### Running via Tool Bench Entry Point
 
@@ -97,11 +97,15 @@ To start transcribing a D&D session recording from the command line:
    *(If omitted, the script will prompt you interactively for the recording path).*
 3. **Interactive Prompts**:
    - **CPU vs GPU Diarization**: You'll be asked if you want to run speaker diarization on CPU instead of GPU. Press `Enter` (default is GPU) unless you run out of GPU VRAM (CUDA errors).
-   - **Interactive Speaker Identification**: During transcription, the tool checks speaker audio prints against `voice_library/`. If it doesn't find a matching voice profile, it will play a short audio clip of the unknown speaker (`winsound`) and prompt you to name them. Typing a name will instantly save that player's voice print to the library.
+   - **Interactive Speaker Identification**: During transcription, the tool checks speaker audio prints against `voice_library/` using L2-normalized cosine distance. If it doesn't find a confident match (>= 88%), it will play an audio snippet of the unknown speaker (`winsound`) and prompt you:
+     - **Standard Player**: Enter the player name (e.g. `Shaun`).
+     - **Roleplay Voice / Persona**: Enter `Shaun (goblin)` or `Shaun/goblin` to save a dedicated persona profile (`Shaun__goblin.npy`) while cleanly mapping to `Shaun (goblin)` in the transcript.
+     - **Best Guess (`bg`)**: Append `bg` or `(bg)` (e.g. `Shaun bg` or `Shaun (goblin) (bg)`), or click **"Best Guess (Don't Train)"** in the GUI. The name is assigned to the transcript, but voice training is bypassed so uncertain guesses never corrupt your voice models.
+     - **Profile Refinement**: When enrolling an existing speaker or persona, the system blends 70% of the historical profile with 30% of the new normalized embedding (`0.7 * old + 0.3 * new`) for progressive accuracy without drift.
 
 ### 📄 Output Files Generated
 
-When transcription finishes, the following files are automatically produced in `transcripts/`:
+When transcription finishes, the following files are automatically produced in `transcripts/` (or the folder passed via `-o` / `--output-dir`):
 - **`transcripts/<name>_session_log_raw.md`**: The complete, unedited WhisperX + PyAnnote transcript (available immediately in ~15 mins).
 - **`transcripts/<name>_session_log_refined.md`**: The post-LLM refined transcript (if AI refinement is active).
 - **`transcripts/<name>_ai_diff.md`**: A detailed **AI Evaluation & Diff Report** listing exact before-and-after line modifications, percentage of lines altered, and processing duration.
@@ -114,14 +118,23 @@ When transcription finishes, the following files are automatically produced in `
 If the system failed to identify a speaker, or if you want to make a player's mathematical voice profile more precise, you can train it using an edited transcript.
 
 ### 1. Edit the Transcript
-Open the output markdown file in `transcripts/` and replace the generic speaker placeholders (e.g., `SPEAKER_00`) with the actual player names (e.g., `Donovan` or `Mercer`), leaving timestamps intact:
+Open the output markdown file in `transcripts/` and replace the generic speaker placeholders (e.g., `SPEAKER_00`) with actual player or persona names (e.g., `Donovan` or `Shaun (goblin)`), leaving timestamps intact:
 ```markdown
 <!-- BEFORE -->
 [0:01:23 - 0:01:45] **SPEAKER_00**: Roll for initiative!
 
-<!-- AFTER -->
+<!-- AFTER (Standard Player) -->
 [0:01:23 - 0:01:45] **Donovan**: Roll for initiative!
+
+<!-- AFTER (Roleplay Voice Persona) -->
+[0:01:48 - 0:02:10] **Shaun (goblin)**: We attack from the shadows!
+
+<!-- AFTER (Uncertain Guess - Ignored by Trainer) -->
+[0:02:15 - 0:02:30] **Matt (bg)**: Did anyone hear that?
 ```
+
+> [!NOTE]
+> Any line marked with `(bg)` or `bg` will be **automatically skipped** during voice training so that unconfirmed speaker lines do not degrade voice model accuracy.
 
 ### 2. Run Training (Voice Harvesting)
 Use **either** of the following methods to extract voice profiles from your edited transcript:
@@ -137,7 +150,7 @@ python extract_voices.py "transcripts/your_edited_transcript.md" "audio_files/yo
 ```
 
 The script scans the markdown file, extracts audio segments where named speakers spoke, generates PyAnnote embeddings, and saves/refines the mathematical voice print (`.npy` files) in:
-`voice_library/<name>.npy`
+`voice_library/<name>.npy` (or `voice_library/<Player>__<Persona>.npy`)
 
 ---
 
@@ -170,6 +183,10 @@ The script scans the markdown file, extracts audio segments where named speakers
 * **Custom Batch Size & API Endpoint**:
   ```powershell
   python dnd_transcribe.py --refine "transcripts/session_raw.md" --batch-size 75 --api-url "http://localhost:1234/v1"
+  ```
+* **Custom Output Directory**:
+  ```powershell
+  python dnd_transcribe.py -a audio_files/session_1.wav -o "D:/MyDnDTranscripts"
   ```
 
 ---

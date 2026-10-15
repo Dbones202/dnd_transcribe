@@ -24,6 +24,54 @@ def time_str_to_seconds(time_str):
         return m * 60 + s
     return 0
 
+def normalize_embedding(emb):
+    if emb is None:
+        return emb
+    norm = np.linalg.norm(emb)
+    if norm > 1e-12:
+        return emb / norm
+    return emb
+
+def parse_speaker_choice(chosen_info):
+    raw = str(chosen_info or "").strip()
+    if not raw:
+        return "", "", False
+    is_bg = False
+    if re.search(r'(?:\b|_|\(|\[)bg(?:\b|_|\)|\])', raw, re.IGNORECASE):
+        is_bg = True
+        raw = re.sub(r'[\(\[]\s*bg\s*[\)\]]', '', raw, flags=re.IGNORECASE).strip()
+        raw = re.sub(r'\s+bg\b', '', raw, flags=re.IGNORECASE).strip()
+
+    persona = ""
+    m_paren = re.match(r'^([^\(\/]+?)\s*[\(\/]\s*([^\)]+?)\s*\)?$', raw)
+    if m_paren:
+        base = m_paren.group(1).strip()
+        persona = m_paren.group(2).strip()
+    elif "__" in raw:
+        parts = raw.split("__", 1)
+        base = parts[0].strip()
+        persona = parts[1].strip()
+    else:
+        base = raw.strip()
+
+    safe_base = re.sub(r'[^a-zA-Z0-9]', '', base)
+    safe_persona = re.sub(r'[^a-zA-Z0-9]', '', persona)
+
+    if not safe_base:
+        return "", "", False
+
+    if safe_persona:
+        model_key = f"{safe_base}__{safe_persona}"
+        display_name = f"{safe_base} ({safe_persona})"
+    else:
+        model_key = safe_base
+        display_name = safe_base
+
+    if is_bg:
+        display_name = f"{display_name} (bg)"
+
+    return display_name, model_key, is_bg
+
 def parse_markdown_for_speakers(md_path):
     """
     Parses a markdown file and returns a dictionary of:
@@ -43,13 +91,17 @@ def parse_markdown_for_speakers(md_path):
                 start_sec = time_str_to_seconds(start_str)
                 end_sec = time_str_to_seconds(end_str)
                 
+                spk_clean = speaker.strip()
                 # Ignore generic SPEAKER_XX labels from training
-                if speaker.startswith("SPEAKER_"):
+                if spk_clean.startswith("SPEAKER_"):
+                    continue
+                # Ignore unverified best guesses from training
+                if re.search(r'(?:\b|_|\(|\[)bg(?:\b|_|\)|\])', spk_clean, re.IGNORECASE):
                     continue
                     
-                if speaker not in speaker_segments:
-                    speaker_segments[speaker] = []
-                speaker_segments[speaker].append((start_sec, end_sec))
+                if spk_clean not in speaker_segments:
+                    speaker_segments[spk_clean] = []
+                speaker_segments[spk_clean].append((start_sec, end_sec))
                 
     return speaker_segments
 
@@ -124,10 +176,8 @@ def main():
             tensor_chunk = torch.from_numpy(chunk_audio).unsqueeze(0)
             
             try:
-                # We feed it directly to the model
-                # PyAnnote expects 16kHz audio tensor
                 emb = inference({"waveform": tensor_chunk, "sample_rate": 16000})
-                speaker_embeddings.append(emb)
+                speaker_embeddings.append(normalize_embedding(emb))
                 total_duration += duration
                 
                 # ~15-20 seconds of pure audio is generally plenty for a solid voice print
@@ -137,12 +187,22 @@ def main():
                 print(f"  Error processing chunk for {speaker}: {e}")
                 
         if speaker_embeddings:
-            # We average the embeddings to create a single robust "Voice Print"
             avg_embedding = np.mean(speaker_embeddings, axis=0)
+            avg_embedding = normalize_embedding(avg_embedding)
             
-            # Save it
-            safe_name = "".join([c for c in speaker if c.isalpha() or c.isdigit()]).rstrip()
-            out_file = os.path.join("voice_library", f"{safe_name}.npy")
+            display_name, model_key, _ = parse_speaker_choice(speaker)
+            if not model_key:
+                model_key = "".join([c for c in speaker if c.isalnum() or c == '_'])
+                display_name = speaker
+                
+            out_file = os.path.join("voice_library", f"{model_key}.npy")
+            if os.path.exists(out_file):
+                print(f"  -> Refining existing profile for {display_name} (weighted blend)...")
+                old_emb = normalize_embedding(np.load(out_file))
+                avg_embedding = normalize_embedding(0.7 * old_emb + 0.3 * avg_embedding)
+            else:
+                print(f"  -> Creating new profile for {display_name}...")
+                
             np.save(out_file, avg_embedding)
             print(f"  -> Saved {out_file} (Harvested {round(total_duration, 1)} seconds of speech)")
         else:

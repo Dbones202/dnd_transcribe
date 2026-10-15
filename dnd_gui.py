@@ -127,7 +127,7 @@ class SpeakerIdentifyModal(tk.Toplevel):
     def __init__(self, parent, spk_tag, clip_path, best_match, best_score, library_speakers, duration):
         super().__init__(parent)
         self.title(f"Identify Speaker: {spk_tag}")
-        self.geometry("540x440")
+        self.geometry("580x510")
         self.resizable(False, False)
         self.configure(bg=COLORS["bg_app"])
         self.transient(parent)
@@ -162,8 +162,8 @@ class SpeakerIdentifyModal(tk.Toplevel):
 
     def _build_ui(self):
         # Header banner
-        header = tk.Frame(self, bg=COLORS["bg_card"], padx=20, pady=14, highlightthickness=1, highlightbackground=COLORS["border"])
-        header.pack(fill="x", padx=16, pady=(16, 10))
+        header = tk.Frame(self, bg=COLORS["bg_card"], padx=20, pady=12, highlightthickness=1, highlightbackground=COLORS["border"])
+        header.pack(fill="x", padx=16, pady=(14, 8))
 
         lbl_title = tk.Label(header, text=f"🎙️ Unrecognized Speaker: {self.spk_tag}", font=("Segoe UI", 12, "bold"), fg=COLORS["text_main"], bg=COLORS["bg_card"])
         lbl_title.pack(anchor="w")
@@ -178,8 +178,8 @@ class SpeakerIdentifyModal(tk.Toplevel):
         lbl_sub.pack(anchor="w", pady=(3, 0))
 
         # Audio Playback Card
-        audio_card = tk.Frame(self, bg=COLORS["bg_card_inner"], padx=16, pady=12, highlightthickness=1, highlightbackground=COLORS["border"])
-        audio_card.pack(fill="x", padx=16, pady=6)
+        audio_card = tk.Frame(self, bg=COLORS["bg_card_inner"], padx=16, pady=10, highlightthickness=1, highlightbackground=COLORS["border"])
+        audio_card.pack(fill="x", padx=16, pady=4)
 
         lbl_aud = tk.Label(audio_card, text="Listen to audio clip:", font=("Segoe UI", 9, "bold"), fg=COLORS["text_main"], bg=COLORS["bg_card_inner"])
         lbl_aud.pack(side="left", padx=(0, 12))
@@ -193,11 +193,11 @@ class SpeakerIdentifyModal(tk.Toplevel):
         self.btn_play.pack(side="left", padx=4)
 
         # Identification Choice Card
-        choice_card = tk.Frame(self, bg=COLORS["bg_card"], padx=16, pady=14, highlightthickness=1, highlightbackground=COLORS["border"])
-        choice_card.pack(fill="both", expand=True, padx=16, pady=6)
+        choice_card = tk.Frame(self, bg=COLORS["bg_card"], padx=16, pady=12, highlightthickness=1, highlightbackground=COLORS["border"])
+        choice_card.pack(fill="both", expand=True, padx=16, pady=4)
 
         lbl_prompt = tk.Label(choice_card, text="Who was speaking in this clip?", font=("Segoe UI", 10, "bold"), fg=COLORS["text_main"], bg=COLORS["bg_card"])
-        lbl_prompt.pack(anchor="w", pady=(0, 8))
+        lbl_prompt.pack(anchor="w", pady=(0, 6))
 
         # Radio 1: Existing Speaker
         self.choice_var = tk.StringVar(value="existing" if self.library_speakers else "new")
@@ -212,7 +212,7 @@ class SpeakerIdentifyModal(tk.Toplevel):
             r1.pack(anchor="w")
 
             combo_frame = tk.Frame(choice_card, bg=COLORS["bg_card"])
-            combo_frame.pack(fill="x", padx=20, pady=(4, 10))
+            combo_frame.pack(fill="x", padx=20, pady=(2, 6))
 
             self.combo_speakers = ttk.Combobox(combo_frame, values=sorted(self.library_speakers), state="readonly", font=("Segoe UI", 9))
             if self.best_match in self.library_speakers:
@@ -231,7 +231,7 @@ class SpeakerIdentifyModal(tk.Toplevel):
         r2.pack(anchor="w")
 
         entry_frame = tk.Frame(choice_card, bg=COLORS["bg_card"])
-        entry_frame.pack(fill="x", padx=20, pady=(4, 6))
+        entry_frame.pack(fill="x", padx=20, pady=(2, 6))
 
         self.entry_new_name = tk.Entry(
             entry_frame, font=("Segoe UI", 10), bg=COLORS["bg_card_inner"],
@@ -239,27 +239,53 @@ class SpeakerIdentifyModal(tk.Toplevel):
             relief="flat", highlightthickness=1, highlightbackground=COLORS["border"],
             highlightcolor=COLORS["border_focus"]
         )
-        self.entry_new_name.pack(fill="x", ipady=4)
+        self.entry_new_name.pack(fill="x", ipady=3)
         if self.best_match:
             self.entry_new_name.insert(0, self.best_match)
-        self.entry_new_name.bind("<Return>", lambda e: self._on_assign())
+        self.entry_new_name.bind("<Return>", lambda e: self._on_assign(is_bg=False))
+
+        # Roleplay Voice / Persona Option
+        lbl_persona = tk.Label(
+            choice_card, text="Roleplay Voice / Persona (Optional, e.g. goblin, Thorin, RP):",
+            font=("Segoe UI", 9), fg=COLORS["text_muted"], bg=COLORS["bg_card"]
+        )
+        lbl_persona.pack(anchor="w", padx=20, pady=(4, 2))
+
+        persona_frame = tk.Frame(choice_card, bg=COLORS["bg_card"])
+        persona_frame.pack(fill="x", padx=20, pady=(0, 4))
+
+        self.entry_persona = tk.Entry(
+            persona_frame, font=("Segoe UI", 9), bg=COLORS["bg_card_inner"],
+            fg=COLORS["text_main"], insertbackground=COLORS["text_main"],
+            relief="flat", highlightthickness=1, highlightbackground=COLORS["border"],
+            highlightcolor=COLORS["border_focus"]
+        )
+        self.entry_persona.pack(fill="x", ipady=2)
 
         # Buttons footer
-        footer = tk.Frame(self, bg=COLORS["bg_app"], pady=12)
+        footer = tk.Frame(self, bg=COLORS["bg_app"], pady=10)
         footer.pack(fill="x", padx=16, side="bottom")
 
         btn_assign = tk.Button(
-            footer, text="✅ Assign & Save Profile", font=("Segoe UI", 10, "bold"),
+            footer, text="✅ Confirm & Train", font=("Segoe UI", 9, "bold"),
             bg=COLORS["success"], fg="#ffffff", activebackground=COLORS["success_hover"],
-            activeforeground="#ffffff", relief="flat", padx=16, pady=6, cursor="hand2",
-            command=self._on_assign
+            activeforeground="#ffffff", relief="flat", padx=12, pady=6, cursor="hand2",
+            command=lambda: self._on_assign(is_bg=False)
         )
-        btn_assign.pack(side="right", padx=(8, 0))
+        btn_assign.pack(side="right", padx=(6, 0))
+
+        btn_bg = tk.Button(
+            footer, text="🟡 Best Guess (Don't Train)", font=("Segoe UI", 9, "bold"),
+            bg="#b58900", fg="#ffffff", activebackground="#cb9900",
+            activeforeground="#ffffff", relief="flat", padx=10, pady=6, cursor="hand2",
+            command=lambda: self._on_assign(is_bg=True)
+        )
+        btn_bg.pack(side="right", padx=(6, 0))
 
         btn_skip = tk.Button(
-            footer, text=f"Skip (Keep {self.spk_tag})", font=("Segoe UI", 9),
+            footer, text=f"Skip ({self.spk_tag})", font=("Segoe UI", 9),
             bg=COLORS["bg_hover"], fg=COLORS["text_muted"], activebackground=COLORS["border"],
-            activeforeground=COLORS["text_main"], relief="flat", padx=12, pady=6, cursor="hand2",
+            activeforeground=COLORS["text_main"], relief="flat", padx=10, pady=6, cursor="hand2",
             command=self._on_skip
         )
         btn_skip.pack(side="right")
@@ -280,7 +306,7 @@ class SpeakerIdentifyModal(tk.Toplevel):
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def _on_assign(self):
+    def _on_assign(self, is_bg=False):
         mode = self.choice_var.get()
         if mode == "existing" and hasattr(self, "combo_speakers"):
             name = self.combo_speakers.get().strip()
@@ -291,7 +317,12 @@ class SpeakerIdentifyModal(tk.Toplevel):
             messagebox.showwarning("Name Required", "Please enter or select a speaker name, or click Skip.", parent=self)
             return
 
-        self.result = name
+        persona = self.entry_persona.get().strip() if hasattr(self, "entry_persona") else ""
+        self.result = {
+            "name": name,
+            "persona": persona,
+            "is_bg": is_bg
+        }
         self.destroy()
 
     def _on_skip(self):
@@ -1490,9 +1521,9 @@ class DnDTranscribeApp(tk.Tk):
         entry.pack(fill="x", padx=16, pady=4, ipady=3)
 
         def _do_rename():
-            new_name = "".join([c for c in entry.get().strip() if c.isalpha() or c.isdigit()])
+            new_name = "".join([c for c in entry.get().strip() if c.isalnum() or c == '_'])
             if not new_name:
-                messagebox.showwarning("Invalid Name", "Please enter an alphanumeric name.", parent=dialog)
+                messagebox.showwarning("Invalid Name", "Please enter an alphanumeric name (letters, numbers, underscores).", parent=dialog)
                 return
             old_f = os.path.join(_script_dir, "voice_library", f"{old_name}.npy")
             new_f = os.path.join(_script_dir, "voice_library", f"{new_name}.npy")

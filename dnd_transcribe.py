@@ -231,6 +231,7 @@ DEVICE_OTHER = "cuda"         # Align/Diarize best on GPU (CUDA) for NVIDIA
 BATCH_SIZE = 8                # Lowered from 16 -> 8 to prevent RTX 5060 Ti 8GB Out Of Memory
 COMPUTE_TYPE = "float16"         # Best performance and accuracy for modern NVIDIA GPUs (RTX 5060 Ti handles float16 easily)
 LOG_FILE = "transcription_metrics.log"
+DEFAULT_TRANSCRIPTS_DIR = os.environ.get("TRANSCRIPTS_DIR", r"E:\GIT\DnD\transcripts")
 
 def log_metric(message):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -624,6 +625,78 @@ def refine_existing_transcript(
         "duration": duration_str
     }
 
+def normalize_embedding(emb: np.ndarray) -> np.ndarray:
+    """L2-normalizes an embedding vector onto the unit sphere."""
+    if emb is None:
+        return emb
+    norm = np.linalg.norm(emb)
+    if norm > 1e-12:
+        return emb / norm
+    return emb
+
+def model_key_to_display(model_key: str) -> str:
+    """Converts a voice_library file stem to a clean display name (e.g. Shaun__goblin -> Shaun (goblin))."""
+    if "__" in model_key:
+        base, persona = model_key.split("__", 1)
+        return f"{base} ({persona})"
+    return model_key
+
+def parse_speaker_choice(chosen_info):
+    """
+    Parses a string or dict into (display_name, model_key, is_bg).
+    Supports:
+      - dict: {"name": "Shaun", "persona": "goblin", "is_bg": False}
+      - string: "Shaun", "Shaun (goblin)", "Shaun__goblin", "Shaun/goblin", "Shaun bg", "Shaun (goblin) (bg)"
+    Returns:
+      (display_name, model_key, is_bg)
+    """
+    import re
+    if isinstance(chosen_info, dict):
+        base = chosen_info.get("name", "").strip()
+        persona = chosen_info.get("persona", "").strip()
+        is_bg = bool(chosen_info.get("is_bg", False))
+    else:
+        raw = str(chosen_info or "").strip()
+        if not raw:
+            return "", "", False
+        is_bg = False
+        # Check for 'bg' tag or '(bg)' or '[bg]'
+        if re.search(r'(?:\b|_|\(|\[)bg(?:\b|_|\)|\])', raw, re.IGNORECASE):
+            is_bg = True
+            raw = re.sub(r'[\(\[]\s*bg\s*[\)\]]', '', raw, flags=re.IGNORECASE).strip()
+            raw = re.sub(r'\s+bg\b', '', raw, flags=re.IGNORECASE).strip()
+
+        # Check for persona in parentheses, slash, or double underscore
+        persona = ""
+        m_paren = re.match(r'^([^\(\/]+?)\s*[\(\/]\s*([^\)]+?)\s*\)?$', raw)
+        if m_paren:
+            base = m_paren.group(1).strip()
+            persona = m_paren.group(2).strip()
+        elif "__" in raw:
+            parts = raw.split("__", 1)
+            base = parts[0].strip()
+            persona = parts[1].strip()
+        else:
+            base = raw.strip()
+
+    safe_base = re.sub(r'[^a-zA-Z0-9]', '', base)
+    safe_persona = re.sub(r'[^a-zA-Z0-9]', '', persona)
+
+    if not safe_base:
+        return "", "", False
+
+    if safe_persona:
+        model_key = f"{safe_base}__{safe_persona}"
+        display_name = f"{safe_base} ({safe_persona})"
+    else:
+        model_key = safe_base
+        display_name = safe_base
+
+    if is_bg:
+        display_name = f"{display_name} (bg)"
+
+    return display_name, model_key, is_bg
+
 def run_dnd_session(
     audio_path=None, 
     skip_llm=False, 
@@ -635,7 +708,8 @@ def run_dnd_session(
     progress_cb=None, 
     log_cb=None,
     speaker_identify_cb=None,
-    cancellation_token=None
+    cancellation_token=None,
+    output_dir=DEFAULT_TRANSCRIPTS_DIR
 ):
     if log_cb or progress_cb:
         set_callbacks(log_cb, progress_cb)
@@ -747,220 +821,231 @@ def run_dnd_session(
             from pyannote.audio import Model, Inference
             
             hf_token_lib = os.getenv("HF_TOKEN")
+            os.makedirs("voice_library", exist_ok=True)
             voice_files = glob.glob(os.path.join("voice_library", "*.npy"))
             
-            if voice_files:
-                library_models = {}
-                for vf in voice_files:
-                    name = os.path.splitext(os.path.basename(vf))[0]
-                    library_models[name] = np.load(vf)
-                    
+            library_models = {}
+            for vf in voice_files:
+                name = os.path.splitext(os.path.basename(vf))[0]
+                try:
+                    loaded_emb = np.load(vf)
+                    library_models[name] = normalize_embedding(loaded_emb)
+                except Exception as ex:
+                    log_metric(f"Warning: Failed to load voice profile {vf}: {ex}")
+                
+            if library_models:
                 log_metric(f"Loaded {len(library_models)} voices from voice_library/")
-                
-                emb_model = Model.from_pretrained("pyannote/wespeaker-voxceleb-resnet34-LM", use_auth_token=hf_token_lib)
-                if not emb_model:
-                     emb_model = Model.from_pretrained("pyannote/embedding", use_auth_token=hf_token_lib)
-                
-                device_emb = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-                emb_model.to(device_emb)
-                inference = Inference(emb_model, window="whole")
-                
-                speaker_chunks = {}
-                for seg in final_result["segments"]:
-                    spk = seg.get("speaker", "UNKNOWN")
-                    if spk.startswith("SPEAKER_"):
-                        if spk not in speaker_chunks:
-                            speaker_chunks[spk] = []
-                        speaker_chunks[spk].append((seg["start"], seg["end"]))
-                        
-                speaker_mapping = {}
-                for spk, chunks in speaker_chunks.items():
-                    chunks.sort(key=lambda x: x[1] - x[0], reverse=True)
+            else:
+                log_metric("Voice library is currently empty. Starting fresh: you will be prompted to identify and enroll speakers.")
+            
+            emb_model = Model.from_pretrained("pyannote/wespeaker-voxceleb-resnet34-LM", use_auth_token=hf_token_lib)
+            if not emb_model:
+                 emb_model = Model.from_pretrained("pyannote/embedding", use_auth_token=hf_token_lib)
+            
+            device_emb = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            emb_model.to(device_emb)
+            inference = Inference(emb_model, window="whole")
+            
+            speaker_chunks = {}
+            for seg in final_result["segments"]:
+                spk = seg.get("speaker", "UNKNOWN")
+                if spk.startswith("SPEAKER_"):
+                    if spk not in speaker_chunks:
+                        speaker_chunks[spk] = []
+                    speaker_chunks[spk].append((seg["start"], seg["end"]))
                     
-                    # Sub-segmenting & outlier filtering to eliminate cross-talk contamination
-                    spk_embeds = []
-                    spk_scored_slices = []
-                    total_dur = 0.0
+            speaker_mapping = {}
+            for spk, chunks in speaker_chunks.items():
+                chunks.sort(key=lambda x: x[1] - x[0], reverse=True)
+                
+                # Sub-segmenting & outlier filtering to eliminate cross-talk contamination
+                spk_embeds = []
+                spk_scored_slices = []
+                total_dur = 0.0
+                
+                for c_start, c_end in chunks:
+                    dur = c_end - c_start
+                    if dur < 1.0: continue
                     
-                    for c_start, c_end in chunks:
-                        dur = c_end - c_start
-                        if dur < 1.0: continue
+                    # Break long chunks into 2.0s slices with 1.0s hop to catch single-voice sub-segments
+                    slice_windows = []
+                    if dur > 3.0:
+                        curr_s = c_start
+                        while curr_s + 1.5 <= c_end:
+                            slice_windows.append((curr_s, min(curr_s + 2.0, c_end)))
+                            curr_s += 1.0
+                    else:
+                        slice_windows.append((c_start, c_end))
                         
-                        # Break long chunks into 2.0s slices with 1.0s hop to catch single-voice sub-segments
-                        slice_windows = []
-                        if dur > 3.0:
-                            curr_s = c_start
-                            while curr_s + 1.5 <= c_end:
-                                slice_windows.append((curr_s, min(curr_s + 2.0, c_end)))
-                                curr_s += 1.0
-                        else:
-                            slice_windows.append((c_start, c_end))
+                    for s_start, s_end in slice_windows:
+                        s_dur = s_end - s_start
+                        s_samp = int(s_start * SAMPLE_RATE)
+                        e_samp = int(s_end * SAMPLE_RATE)
+                        c_audio = audio[s_samp:e_samp]
+                        t_chunk = torch.from_numpy(c_audio).unsqueeze(0)
+                        
+                        try:
+                            emb = inference({"waveform": t_chunk, "sample_rate": SAMPLE_RATE})
+                            emb = normalize_embedding(emb)
                             
-                        for s_start, s_end in slice_windows:
-                            s_dur = s_end - s_start
-                            s_samp = int(s_start * SAMPLE_RATE)
-                            e_samp = int(s_end * SAMPLE_RATE)
-                            c_audio = audio[s_samp:e_samp]
-                            t_chunk = torch.from_numpy(c_audio).unsqueeze(0)
-                            
-                            try:
-                                emb = inference({"waveform": t_chunk, "sample_rate": SAMPLE_RATE})
-                                
-                                slice_best_score = -1.0
-                                slice_best_name = None
-                                for lib_name, lib_emb in library_models.items():
-                                    sim = 1.0 - cosine(emb.flatten(), lib_emb.flatten())
-                                    if sim > slice_best_score:
-                                        slice_best_score = sim
-                                        slice_best_name = lib_name
-                                        
-                                spk_embeds.append(emb)
-                                spk_scored_slices.append({
-                                    "emb": emb,
-                                    "best_name": slice_best_name,
-                                    "best_score": slice_best_score,
-                                    "start": s_start,
-                                    "end": s_end
-                                })
-                                total_dur += s_dur
-                                if total_dur > 20.0: break
-                            except Exception:
-                                pass
-                        if total_dur > 20.0: break
-                            
-                    if spk_scored_slices:
-                        # Check for majority consensus across slices to filter out cross-talk outliers
-                        votes = {}
-                        for s in spk_scored_slices:
-                            if s["best_score"] > 0.85 and s["best_name"]:
-                                votes[s["best_name"]] = votes.get(s["best_name"], 0) + 1
-                                
-                        consensus_name = None
-                        if votes:
-                            top_voted = max(votes.items(), key=lambda x: x[1])
-                            if top_voted[1] >= max(1, len(spk_scored_slices) // 3):
-                                consensus_name = top_voted[0]
-                                
-                        # Use only pure matching embeddings when averaging
-                        if consensus_name:
-                            pure_embeds = [s["emb"] for s in spk_scored_slices if s["best_name"] == consensus_name and s["best_score"] > 0.75]
-                            avg_emb = np.mean(pure_embeds, axis=0) if pure_embeds else np.mean(spk_embeds, axis=0)
-                        else:
-                            avg_emb = np.mean(spk_embeds, axis=0)
-                            
-                        best_match = None
-                        best_score = -1.0
-                        for lib_name, lib_emb in library_models.items():
-                            sim = 1.0 - cosine(avg_emb.flatten(), lib_emb.flatten())
-                            if sim > best_score:
-                                best_score = sim
-                                best_match = lib_name
-                                
-                        if best_score > 0.88 and best_match:
-                            log_metric(f"[Match] Reassigned {spk} -> {best_match} (Similarity: {round(best_score*100, 1)}%)")
-                            speaker_mapping[spk] = best_match
-                        else:
-                            if best_match and best_score > 0.40:
-                                best_str = f"Ambiguous match with {best_match} at {round(best_score*100, 1)}%"
-                            else:
-                                best_str = f"Best was {best_match} at {round(best_score*100, 1)}%" if best_match else "No library match"
-                            
-                            log_metric(f"\n[No Match] {spk} remains unknown ({best_str})")
-                            
-                            # Pick the cleanest audio slice for playback
-                            cleanest_slice = max(spk_scored_slices, key=lambda x: x["best_score"]) if spk_scored_slices else None
-                            if cleanest_slice:
-                                play_st = cleanest_slice["start"]
-                                play_en = cleanest_slice["end"]
-                            else:
-                                play_st = chunks[0][0]
-                                play_en = min(play_st + 6.0, chunks[0][1])
-                                
-                            st_samp = int(play_st * SAMPLE_RATE)
-                            en_samp = int(play_en * SAMPLE_RATE)
-                            
-                            playback_audio = audio[st_samp:en_samp]
-                            temp_playback_file = f"temp_playback_{spk}.wav"
-                            
-                            scaled_audio = np.int16(playback_audio * 32767)
-                            wavfile.write(temp_playback_file, SAMPLE_RATE, scaled_audio)
-                            
-                            # If GUI callback is provided, invoke it
-                            if speaker_identify_cb:
-                                chosen_name = speaker_identify_cb(
-                                    spk_tag=spk,
-                                    audio_clip_path=temp_playback_file,
-                                    best_match=best_match,
-                                    best_score=best_score,
-                                    library_names=list(library_models.keys()),
-                                    duration=total_dur
-                                )
-                                if chosen_name:
-                                    safe_name = "".join([c for c in chosen_name if c.isalpha() or c.isdigit()]).rstrip()
-                                    speaker_mapping[spk] = safe_name
-                                    log_metric(f"Assigned {spk} -> {safe_name}")
+                            slice_best_score = -1.0
+                            slice_best_name = None
+                            for lib_name, lib_emb in library_models.items():
+                                sim = 1.0 - cosine(emb.flatten(), lib_emb.flatten())
+                                if sim > slice_best_score:
+                                    slice_best_score = sim
+                                    slice_best_name = lib_name
                                     
-                                    out_file = os.path.join("voice_library", f"{safe_name}.npy")
-                                    os.makedirs("voice_library", exist_ok=True)
-                                    
+                            spk_embeds.append(emb)
+                            spk_scored_slices.append({
+                                "emb": emb,
+                                "best_name": slice_best_name,
+                                "best_score": slice_best_score,
+                                "start": s_start,
+                                "end": s_end
+                            })
+                            total_dur += s_dur
+                            if total_dur > 20.0: break
+                        except Exception:
+                            pass
+                    if total_dur > 20.0: break
+                        
+                if spk_scored_slices:
+                    # Check for majority consensus across slices to filter out cross-talk outliers
+                    votes = {}
+                    for s in spk_scored_slices:
+                        if s["best_score"] > 0.85 and s["best_name"]:
+                            votes[s["best_name"]] = votes.get(s["best_name"], 0) + 1
+                            
+                    consensus_name = None
+                    if votes:
+                        top_voted = max(votes.items(), key=lambda x: x[1])
+                        if top_voted[1] >= max(1, len(spk_scored_slices) // 3):
+                            consensus_name = top_voted[0]
+                            
+                    # Use only pure matching embeddings when averaging
+                    if consensus_name:
+                        pure_embeds = [s["emb"] for s in spk_scored_slices if s["best_name"] == consensus_name and s["best_score"] > 0.75]
+                        avg_emb = np.mean(pure_embeds, axis=0) if pure_embeds else np.mean(spk_embeds, axis=0)
+                    else:
+                        avg_emb = np.mean(spk_embeds, axis=0)
+                        
+                    avg_emb = normalize_embedding(avg_emb)
+                    
+                    best_match = None
+                    best_score = -1.0
+                    for lib_name, lib_emb in library_models.items():
+                        sim = 1.0 - cosine(avg_emb.flatten(), lib_emb.flatten())
+                        if sim > best_score:
+                            best_score = sim
+                            best_match = lib_name
+                            
+                    # Tier 1: Auto-match if high confidence (>= 0.88)
+                    if best_score >= 0.88 and best_match:
+                        display_match = model_key_to_display(best_match)
+                        log_metric(f"[Match] Reassigned {spk} -> {display_match} (Similarity: {round(best_score*100, 1)}%)")
+                        speaker_mapping[spk] = display_match
+                    else:
+                        display_best = model_key_to_display(best_match) if best_match else None
+                        if best_match and best_score > 0.40:
+                            best_str = f"Ambiguous match with {display_best} at {round(best_score*100, 1)}%"
+                        else:
+                            best_str = f"Best was {display_best} at {round(best_score*100, 1)}%" if display_best else "No library match"
+                        
+                        log_metric(f"\n[Prompt Required] {spk} ({best_str})")
+                        
+                        # Pick cleanest slice for playback
+                        cleanest_slice = max(spk_scored_slices, key=lambda x: x["best_score"]) if spk_scored_slices else None
+                        if cleanest_slice:
+                            play_st = cleanest_slice["start"]
+                            play_en = cleanest_slice["end"]
+                        else:
+                            play_st = chunks[0][0]
+                            play_en = min(play_st + 6.0, chunks[0][1])
+                            
+                        st_samp = int(play_st * SAMPLE_RATE)
+                        en_samp = int(play_en * SAMPLE_RATE)
+                        
+                        playback_audio = audio[st_samp:en_samp]
+                        temp_playback_file = f"temp_playback_{spk}.wav"
+                        
+                        scaled_audio = np.int16(playback_audio * 32767)
+                        wavfile.write(temp_playback_file, SAMPLE_RATE, scaled_audio)
+                        
+                        chosen_info = None
+                        if speaker_identify_cb:
+                            chosen_info = speaker_identify_cb(
+                                spk_tag=spk,
+                                audio_clip_path=temp_playback_file,
+                                best_match=display_best,
+                                best_score=best_score,
+                                library_names=sorted(list(library_models.keys())),
+                                duration=total_dur
+                            )
+                        else:
+                            # CLI interactive prompt
+                            while True:
+                                print(f"\nPlaying audio sample for {spk}...")
+                                winsound.PlaySound(temp_playback_file, winsound.SND_FILENAME)
+                                print(f"Identified {spk} ({best_str})")
+                                print("Options:")
+                                print("  - Enter name (e.g. 'Shaun')")
+                                print("  - Enter roleplay voice (e.g. 'Shaun (goblin)' or 'Shaun/goblin')")
+                                print("  - Enter best guess (e.g. 'Shaun bg' or 'Shaun (goblin) bg' - will NOT train voice library)")
+                                print(f"  - Press Enter to keep as {spk}, or type 'replay' to listen again")
+                                user_input = input("Who is speaking? ").strip()
+                                
+                                if user_input.lower() == 'replay':
+                                    continue
+                                elif user_input == "":
+                                    chosen_info = ""
+                                    break
+                                else:
+                                    chosen_info = user_input
+                                    break
+                        
+                        if chosen_info:
+                            display_name, model_key, is_bg = parse_speaker_choice(chosen_info)
+                            if display_name:
+                                speaker_mapping[spk] = display_name
+                                is_generic_unnamed = model_key.lower() in ("unknown", "skip", "none", "unassigned", "unnamed")
+                                if is_bg or is_generic_unnamed:
+                                    if is_generic_unnamed:
+                                        log_metric(f"Assigned {spk} -> {display_name} [Skipped Voice Training]")
+                                    else:
+                                        log_metric(f"Assigned {spk} -> {display_name} [Best Guess - Not Trained]")
+                                else:
+                                    log_metric(f"Assigned {spk} -> {display_name}")
+                                    out_file = os.path.join("voice_library", f"{model_key}.npy")
                                     if os.path.exists(out_file):
-                                        log_metric(f"  -> Found existing profile for {safe_name}. Refining voice print...")
-                                        old_embedding = np.load(out_file)
-                                        avg_emb = (old_embedding + avg_emb) / 2.0
+                                        log_metric(f"  -> Refining existing profile for {model_key} (Weighted blend)...")
+                                        old_embedding = normalize_embedding(np.load(out_file))
+                                        avg_emb = normalize_embedding(0.7 * old_embedding + 0.3 * avg_emb)
+                                    else:
+                                        log_metric(f"  -> Creating new profile for {model_key}...")
                                         
                                     np.save(out_file, avg_emb)
-                                    log_metric(f"  -> Saved {out_file} (Harvested {round(total_dur, 1)} seconds of speech)")
-                                    library_models[safe_name] = avg_emb
-                                else:
-                                    log_metric(f"Leaving as {spk}")
+                                    log_metric(f"  -> Saved {out_file} (Harvested {round(total_dur, 1)}s of speech)")
+                                    library_models[model_key] = avg_emb
                             else:
-                                # CLI interactive prompt
-                                while True:
-                                    print(f"Playing audio sample for {spk}...")
-                                    winsound.PlaySound(temp_playback_file, winsound.SND_FILENAME)
-                                    
-                                    user_input = input(f"Who is speaking? (Type name, press Enter to keep as {spk}, type 'replay' to listen again): ").strip()
-                                    
-                                    if user_input.lower() == 'replay':
-                                        continue
-                                    elif user_input == "":
-                                        print(f"Leaving as {spk}")
-                                        break
-                                    else:
-                                        safe_name = "".join([c for c in user_input if c.isalpha() or c.isdigit()]).rstrip()
-                                        speaker_mapping[spk] = safe_name
-                                        print(f"Assigned {spk} -> {safe_name}")
-                                        
-                                        out_file = os.path.join("voice_library", f"{safe_name}.npy")
-                                        os.makedirs("voice_library", exist_ok=True)
-                                        
-                                        if os.path.exists(out_file):
-                                            print(f"  -> Found existing profile for {safe_name}. Refining voice print...")
-                                            old_embedding = np.load(out_file)
-                                            avg_emb = (old_embedding + avg_emb) / 2.0
-                                            
-                                        np.save(out_file, avg_emb)
-                                        print(f"  -> Saved {out_file} (Harvested {round(total_dur, 1)} seconds of speech)")
-                                        
-                                        library_models[safe_name] = avg_emb
-                                        break
-                                        
-                            if os.path.exists(temp_playback_file):
-                                try:
-                                    os.remove(temp_playback_file)
-                                except Exception:
-                                    pass
+                                log_metric(f"Leaving as {spk}")
+                        else:
+                            log_metric(f"Leaving as {spk}")
                             
-                for seg in final_result["segments"]:
-                    spk = seg.get("speaker", "UNKNOWN")
-                    if spk in speaker_mapping:
-                        seg["speaker"] = speaker_mapping[spk]
+                        if os.path.exists(temp_playback_file):
+                            try:
+                                os.remove(temp_playback_file)
+                            except Exception:
+                                pass
                         
-                del emb_model
-                gc.collect()
-                torch.cuda.empty_cache()
-            else:
-                log_metric("No voices found in voice_library/. Skipping identification.")
+            for seg in final_result["segments"]:
+                spk = seg.get("speaker", "UNKNOWN")
+                if spk in speaker_mapping:
+                    seg["speaker"] = speaker_mapping[spk]
+                    
+            del emb_model
+            gc.collect()
+            torch.cuda.empty_cache()
                 
         except Exception as e:
             log_metric(f"Error during speaker identification: {e}")
@@ -971,12 +1056,13 @@ def run_dnd_session(
             orig_name = os.path.basename(file_path)
             
         clean_stem = os.path.splitext(orig_name)[0]
-        os.makedirs("transcripts", exist_ok=True)
+        out_folder = output_dir or DEFAULT_TRANSCRIPTS_DIR
+        os.makedirs(out_folder, exist_ok=True)
         
-        raw_output_filename = os.path.join("transcripts", f"{clean_stem}_session_log_raw.md")
-        standard_output_filename = os.path.join("transcripts", f"{clean_stem}_session_log.md")
-        refined_output_filename = os.path.join("transcripts", f"{clean_stem}_session_log_refined.md")
-        diff_output_filename = os.path.join("transcripts", f"{clean_stem}_ai_diff.md")
+        raw_output_filename = os.path.join(out_folder, f"{clean_stem}_session_log_raw.md")
+        standard_output_filename = os.path.join(out_folder, f"{clean_stem}_session_log.md")
+        refined_output_filename = os.path.join(out_folder, f"{clean_stem}_session_log_refined.md")
+        diff_output_filename = os.path.join(out_folder, f"{clean_stem}_ai_diff.md")
         
         raw_lines = []
         for segment in final_result["segments"]:
@@ -1105,12 +1191,16 @@ def parse_markdown_for_speakers(md_path):
                 start_sec = time_str_to_seconds(start_str)
                 end_sec = time_str_to_seconds(end_str)
                 
-                if speaker.startswith("SPEAKER_"):
+                spk_clean = speaker.strip()
+                if spk_clean.startswith("SPEAKER_"):
+                    continue
+                # Ignore unverified best guesses from voice training
+                if re.search(r'(?:\b|_|\(|\[)bg(?:\b|_|\)|\])', spk_clean, re.IGNORECASE):
                     continue
                     
-                if speaker not in speaker_segments:
-                    speaker_segments[speaker] = []
-                speaker_segments[speaker].append((start_sec, end_sec))
+                if spk_clean not in speaker_segments:
+                    speaker_segments[spk_clean] = []
+                speaker_segments[spk_clean].append((start_sec, end_sec))
     return speaker_segments
 
 def train_voices(md_path, audio_path, progress_cb=None, log_cb=None):
@@ -1169,7 +1259,7 @@ def train_voices(md_path, audio_path, progress_cb=None, log_cb=None):
             
             try:
                 emb = inference({"waveform": tensor_chunk, "sample_rate": SAMPLE_RATE})
-                speaker_embeddings.append(emb)
+                speaker_embeddings.append(normalize_embedding(emb))
                 total_duration += duration
                 if total_duration > 20.0: break
             except Exception as e:
@@ -1177,20 +1267,25 @@ def train_voices(md_path, audio_path, progress_cb=None, log_cb=None):
                 
         if speaker_embeddings:
             avg_embedding = np.mean(speaker_embeddings, axis=0)
-            safe_name = "".join([c for c in speaker if c.isalpha() or c.isdigit()]).rstrip()
-            out_file = os.path.join("voice_library", f"{safe_name}.npy")
+            avg_embedding = normalize_embedding(avg_embedding)
+            
+            display_name, model_key, _ = parse_speaker_choice(speaker)
+            if not model_key:
+                model_key = "".join([c for c in speaker if c.isalnum() or c == '_'])
+                display_name = speaker
+                
+            out_file = os.path.join("voice_library", f"{model_key}.npy")
             
             is_refinement = os.path.exists(out_file)
             if is_refinement:
-                log_metric(f"  -> Found existing profile for {speaker}. Refining voice print...")
-                old_embedding = np.load(out_file)
-                # Average the old and new embeddings to refine over time
-                avg_embedding = (old_embedding + avg_embedding) / 2.0
+                log_metric(f"  -> Found existing profile for {display_name}. Refining voice print (weighted blend)...")
+                old_embedding = normalize_embedding(np.load(out_file))
+                avg_embedding = normalize_embedding(0.7 * old_embedding + 0.3 * avg_embedding)
                 
             np.save(out_file, avg_embedding)
             log_metric(f"  -> Saved {out_file} (Harvested {round(total_duration, 1)} seconds)")
             harvested.append({
-                "speaker": safe_name,
+                "speaker": display_name,
                 "duration": round(total_duration, 1),
                 "is_refined": is_refinement,
                 "path": out_file
@@ -1252,6 +1347,8 @@ if __name__ == "__main__":
     parser.add_argument("--train", action="store_true", help="Harvest voices from an annotated markdown transcript to build the voice_library.")
     parser.add_argument("--md", type=str, help="Path to the edited markdown (.md) file (for --train)")
     
+    parser.add_argument("-o", "--output-dir", type=str, default=DEFAULT_TRANSCRIPTS_DIR, help=f"Directory for output transcripts (default: {DEFAULT_TRANSCRIPTS_DIR}).")
+    
     args = parser.parse_args()
     
     selected_audio = args.audio or args.input
@@ -1267,4 +1364,4 @@ if __name__ == "__main__":
             else:
                 train_voices(args.md, selected_audio)
         else:
-            run_dnd_session(audio_path=selected_audio, skip_llm=args.no_llm, batch_size=args.batch_size)
+            run_dnd_session(audio_path=selected_audio, skip_llm=args.no_llm, batch_size=args.batch_size, output_dir=args.output_dir)

@@ -10,6 +10,7 @@ import os
 import json
 import time
 import shutil
+import base64
 import urllib.request
 import urllib.error
 from pathlib import Path
@@ -195,7 +196,7 @@ def transcribe_session(params: Dict[str, Any]) -> None:
     device_diarize = params.get("device_diarize", "cuda")
     normalize_audio = bool(params.get("normalize_audio", True))
     api_url = params.get("api_url", "http://localhost:1234/v1")
-    output_dir = params.get("output_dir", "transcripts")
+    output_dir = params.get("output_dir", r"E:\GIT\DnD\transcripts")
 
     if not audio_path:
         emit({"type": "error", "message": "Missing required parameter 'audio_path'"})
@@ -223,7 +224,13 @@ def transcribe_session(params: Dict[str, Any]) -> None:
 
             audio_url = ""
             if audio_clip_path and os.path.exists(audio_clip_path):
-                audio_url = f"/api/files/{os.path.abspath(audio_clip_path)}"
+                try:
+                    with open(audio_clip_path, "rb") as f:
+                        b64_clip = base64.b64encode(f.read()).decode("ascii")
+                    audio_url = f"data:audio/wav;base64,{b64_clip}"
+                except Exception:
+                    clean_path = Path(audio_clip_path).resolve().as_posix()
+                    audio_url = f"/api/files/{clean_path}"
 
             emit({
                 "type": "prompt",
@@ -255,17 +262,22 @@ def transcribe_session(params: Dict[str, Any]) -> None:
             api_url=api_url,
             progress_cb=_prog_cb,
             log_cb=_log_cb,
-            speaker_identify_cb=_speaker_identify_cb
+            speaker_identify_cb=_speaker_identify_cb,
+            output_dir=output_dir
         )
 
         # Move or copy outputs if a custom output directory was requested
-        if output_dir and output_dir != "transcripts" and isinstance(res, dict):
+        if output_dir and isinstance(res, dict):
             os.makedirs(output_dir, exist_ok=True)
             for k in ("raw_path", "refined_path", "diff_path", "standard_path"):
                 src = res.get(k)
                 if src and os.path.exists(src):
                     dst = os.path.join(output_dir, os.path.basename(src))
-                    if os.path.abspath(src) != os.path.abspath(dst):
+                    try:
+                        is_same = os.path.samefile(src, dst)
+                    except Exception:
+                        is_same = os.path.abspath(src) == os.path.abspath(dst)
+                    if not is_same:
                         shutil.copy2(src, dst)
                         res[k] = dst
 
